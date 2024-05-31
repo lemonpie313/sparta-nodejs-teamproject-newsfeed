@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  userId   Int    @id @default(autoincrement()) @map("user_id")
+  email    String @unique @map("email")
+  password String @map("password")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  UserInfos UserInfos?
+  Posts     Posts[]
+  Comments  Comments[]
+
+  @@map("users")
+}
+
+model UserInfos {
+  userInfoId       Int      @id @default(autoincrement()) @map("user_info_id")
+  UserId           Int      @unique @map("user_id")
+  role             String   @default("FAN") @map("role")
+  name             String   @map("name")
+  nickname         String   @map("nickname")
+  selfIntroduction String   @map("self_introduction") @db.Text
+  profilePicture   String   @map("profile_picture") // 아직 확실히 안정함
+  prefer           Json     @map("prefer")
+  likePosts        Json     @map("like_posts")
+  likeComments     Json     @map("like_comments")
+  followings       Json     @map("followings") // ERD에 'follows' -> 'followings' 로 교체
+  followers        Json     @map("followers")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+
+  @@map("user_infos")
+}
+
+model Posts {
+  postId      Int      @id @default(autoincrement()) @map("post_id")
+  UserId      Int      @map("user_id")
+  postPicture Json     @map("post_picture")
+  postContent String   @map("self_introduction") @db.Text
+  keywords    Json     @map("keywords")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  PostLikes PostLikes?
+  User      Users      @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+  Comments  Comments[]
+
+  @@map("posts")
+}
+
+model Comments {
+  commentId Int      @id @default(autoincrement()) @map("comment_id")
+  PostId    Int      @map("post_id")
+  UserId    Int      @map("user_id")
+  comment   String   @map("comment") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  CommentLikes CommentLikes?
+  User         Users         @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+  Post         Posts         @relation(fields: [PostId], references: [postId], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model PostLikes {
+  postLikesId Int      @id @default(autoincrement()) @map("post_likes_id")
+  PostId      Int      @unique @map("post_id")
+  postLikes   Int      @default(0) @map("post_likes")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  Post Posts @relation(fields: [PostId], references: [postId], onDelete: Cascade)
+
+  @@map("post_likes")
+}
+
+model CommentLikes {
+  commentLikesId Int      @id @default(autoincrement()) @map("comment_likes_id")
+  CommentId      Int      @unique @map("comment_id")
+  commentLikes   Int      @default(0) @map("comment_likes")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  Comment Comments @relation(fields: [CommentId], references: [commentId], onDelete: Cascade)
+
+  @@map("comment_likes")
+}
