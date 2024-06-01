@@ -37,7 +37,7 @@ router.post('/:group', authMiddleware, async (req, res, next) => {
 				group,
 				UserId: +UserId,
 				postContent,
-				postPicture: postPicture ?? [],
+				postPictures: postPicture ?? [],
 				keywords,
 			}
 		});
