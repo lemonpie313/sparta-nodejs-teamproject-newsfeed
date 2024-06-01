@@ -10,13 +10,13 @@ const signUpSchema = Joi.object({
     'any.required': MESSAGES.AUTH.COMMON.PASSWORD.REQUIRED,
     'string.min': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
   }),
-  name: Joi.string().required().message({
+  name: Joi.string().required().messages({
     'any.required': MESSAGES.AUTH.COMMON.NAME.REQUIRED,
   }),
-  nickname: Joi.string().required().message({
+  nickname: Joi.string().required().messages({
     'any.required': MESSAGES.AUTH.COMMON.NICKNAME.REQUIRED,
   }),
-  selfIntroduction: Joi.string().required().message({
+  selfIntroduction: Joi.string().required().messages({
     'any.required': MESSAGES.AUTH.COMMON.SELF_INTRODUCTION.REQUIRED,
   }),
 });

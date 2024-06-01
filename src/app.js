@@ -10,6 +10,8 @@ dotEnv.config();
 const app = express();
 const PORT = 3000; // 서버를 열 때 사용할 포트 번호
 
+app.use(express.json());
+
 app.get('/', (req, res) => {
   res.send('루트!!');
 });

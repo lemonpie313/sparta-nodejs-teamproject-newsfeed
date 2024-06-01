@@ -41,6 +41,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
         });
         const userInfo = await tx.userInfos.create({
           data: {
+            UserId: user.userId,
             name,
             nickname,
             selfIntroduction,
