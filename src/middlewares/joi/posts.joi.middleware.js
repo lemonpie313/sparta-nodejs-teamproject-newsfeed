@@ -7,6 +7,7 @@ const postSchema = Joi.object({
   postContent: Joi.string().required().messages({
     'any.required': MESSAGES.POSTS.CREATE.POST_CONTENT.REQUIRED,
   }),
+  postPicture: Joi.array(),
   //postPicture: Joi.object().
   keywords: Joi.string().max(10).messages({
     'string.min': MESSAGES.POSTS.CREATE.KEYWORDS.MAX_LENGTH,
