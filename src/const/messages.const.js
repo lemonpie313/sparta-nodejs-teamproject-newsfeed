@@ -10,12 +10,15 @@ export const MESSAGES = {
         REQUIRED: '비밀번호를 입력해주세요.',
         MIN_LENGTH: '비밀번호는 6자리 이상이어야 합니다.',
       },
-      PASSWORD_CONFIRM: {
-        REQUIRED: '비밀번호 확인을 입력해주세요.',
-        NOT_MATCHED: '입력한 두 비밀번호가 일치하지 않습니다.',
-      },
       NAME: {
         REQUIRED: '이름을 입력해주세요.',
+      },
+      //name, nickname, selfIntroduction
+      NICKNAME: {
+        REQUIRED: '닉네임을 입력해주세요.',
+      },
+      SELF_INTRODUCTION: {
+        REQUIRED: '한줄소개를 입력해주세요.',
       },
     },
     SIGN_UP: {
@@ -36,5 +39,13 @@ export const MESSAGES = {
   },
   POSTS: {
     //알아서 추가해주세요!!
+  },
+  JWT: {
+    NONE: '인증 정보가 없습니다.',
+    NOT_TYPE: '지원하지 않는 인증방식입니다.',
+    NO_MATCH: '인증 정보와 일치하는 사용자가 없습니다.',
+    EXPIRED: '인증 정보가 만료되었습니다.',
+    NOT_AVAILABLE: '인증 정보가 유효하지 않습니다.',
+    ELSE: '비정상적인 접근입니다.',
   },
 };
