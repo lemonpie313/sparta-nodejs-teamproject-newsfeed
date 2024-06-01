@@ -29,7 +29,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 
     const userInfo = await prisma.$transaction(
       async (tx) => {
-        const user = await tx.users.create({
+        const user = await tx.Users.create({
           data: {
             email,
             password: hashedPassword,
@@ -39,8 +39,9 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
             email: true,
           },
         });
-        const userInfo = await tx.userInfos.create({
+        const userInfo = await tx.UserInfos.create({
           data: {
+            UserId: user.userId,
             name,
             nickname,
             selfIntroduction,
