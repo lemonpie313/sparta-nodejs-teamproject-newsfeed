@@ -21,18 +21,18 @@ router.post(
       const { UserId } = req.user;
 
       //이미지가 유효한지 (jpg, png 등...)
-        if (postPicture) {
-          postPicture.forEach((i) => {
-			console.log("검사할것: "+i);
-			const ext = i.replace(/(\w|-)+./, '');
-            if (!(["jpg","png","jpeg","gif","mp4","mov"].includes(ext))) {
-              return res.status(HTTP_STATUS.BAD_REQUEST).json({
-                status: HTTP_STATUS.BAD_REQUEST,
-                message: MESSAGES.POSTS.CREATE.POST_PICTURE.INVALID_FORMAT,
-              });
-            }
-          });
-        }
+      if (postPicture) {
+        postPicture.forEach((i) => {
+          console.log('검사할것: ' + i);
+          const ext = i.replace(/(\w|-)+./, '');
+          if (!['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov'].includes(ext)) {
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
+              status: HTTP_STATUS.BAD_REQUEST,
+              message: MESSAGES.POSTS.CREATE.POST_PICTURE.INVALID_FORMAT,
+            });
+          }
+        });
+      }
 
       //그룹 이름 검사
       if (!Object.values(GROUP).includes(group)) {
@@ -42,39 +42,50 @@ router.post(
         });
       }
 
-      let pictures = [];
-
-      const post = await prisma.$transaction(
-        async (tx) => {
-          const post = await tx.posts.create({
-            data: {
-              group,
-              UserId: +UserId,
-              postContent,
-              keywords: keywords ?? '',
-            },
-          });
-          for (let cur of postPicture) {
-            const pic = await tx.postPictures.create({
-              data: {
-                PostId: post.postId,
-                postPicture: cur,
-              },
-              select: {
-                postPictureId: true,
-                PostId: true,
-                postPicture: true,
-              },
-            });
-
-            pictures.push(pic);
-          }
-          return { post, pictures };
+      //데이터 분리 없이 그대로 진행할 경우
+      const post = await prisma.posts.create({
+        data: {
+          group,
+          UserId: +UserId,
+          postContent,
+		  postPictures: postPicture ?? [],
+          keywords: keywords ?? '',
         },
-        {
-          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-        }
-      );
+      });
+
+      // 데이터 분리할 경우...
+      //   let pictures = [];
+      //   const post = await prisma.$transaction(
+      //     async (tx) => {
+      //       const post = await tx.posts.create({
+      //         data: {
+      //           group,
+      //           UserId: +UserId,
+      //           postContent,
+      //           keywords: keywords ?? '',
+      //         },
+      //       });
+      //       for (let cur of postPicture) {
+      //         const pic = await tx.postPictures.create({
+      //           data: {
+      //             PostId: post.postId,
+      //             postPicture: cur,
+      //           },
+      //           select: {
+      //             postPictureId: true,
+      //             PostId: true,
+      //             postPicture: true,
+      //           },
+      //         });
+
+      //         pictures.push(pic);
+      //       }
+      //       return { post, pictures };
+      //     },
+      //     {
+      //       isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+      //     }
+      //   );
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
@@ -89,7 +100,6 @@ router.post(
   }
 );
 
-
 // 내 게시물 목록 조회
 router.get('/me', authMiddleware, async (req, res, next) => {
   try {
@@ -101,21 +111,21 @@ router.get('/me', authMiddleware, async (req, res, next) => {
       where: {
         UserId,
       },
-	  select: {
-		postId: true,
-		UserId: true,
-		group: true,
-		postContent: true,
-		PostPictures: {
-			select: {
-				postPictureId: true,
-				postPicture: true,
-			}
-		},
-		keywords: true,
-		createdAt: true,
-		updatedAt: true,
-	  },
+      select: {
+        postId: true,
+        UserId: true,
+        group: true,
+        postContent: true,
+        PostPictures: {
+          select: {
+            postPictureId: true,
+            postPicture: true,
+          },
+        },
+        keywords: true,
+        createdAt: true,
+        updatedAt: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
