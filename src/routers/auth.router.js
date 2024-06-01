@@ -15,7 +15,7 @@ const router = express.Router();
 //회원가입
 router.post('/sign-up', signUpValidator, async (req, res, next) => {
 	try {
-		const { email, password, name, nickname, selfIntroduction } = req.body;
+		const { email, password, name, nickname, selfIntroduction, profilePicture } = req.body;
 		const isExistEmail = await prisma.users.findFirst({
 			//db의 이메일:body의 이메일
 			where: {
@@ -49,12 +49,14 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 						name,
 						nickname,
 						selfIntroduction,
+						profilePicture: profilePicture ?? "image.jpg",
 					},
 					select: {
 						name: true,
 						role: true,
 						nickname: true,
 						selfIntroduction: true,
+						profilePicture: true,
 						createdAt: true,
 						updatedAt: true,
 					},
