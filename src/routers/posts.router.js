@@ -3,9 +3,8 @@ import { prisma } from '../utils/prisma/index.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { MESSAGES } from '../const/messages.const.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
-import { postValidator } from '../middlewares/joi/posts.joi.middleware.js';
+import { postValidator, postEditValidator } from '../middlewares/joi/posts.joi.middleware.js';
 import { GROUP } from '../const/group.const.js';
-import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
@@ -48,8 +47,8 @@ router.post(
           group,
           UserId: +UserId,
           postContent,
-		  postPictures: postPicture ?? [],
-          keywords: keywords ?? '',
+          postPicture: postPicture ?? [],
+          keywords: keywords ?? "",
         },
       });
 
@@ -111,26 +110,11 @@ router.get('/me', authMiddleware, async (req, res, next) => {
       where: {
         UserId,
       },
-      select: {
-        postId: true,
-        UserId: true,
-        group: true,
-        postContent: true,
-        PostPictures: {
-          select: {
-            postPictureId: true,
-            postPicture: true,
-          },
-        },
-        keywords: true,
-        createdAt: true,
-        updatedAt: true,
-      },
       orderBy: {
         createdAt: 'desc',
       },
     });
-
+    // 3. 결과 반환한다.
     return res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.READ.SUCCEED,
@@ -141,12 +125,61 @@ router.get('/me', authMiddleware, async (req, res, next) => {
   }
 });
 
-router.get('/:group/:postId', authMiddleware, async (req, res, next) => {
-  // posts/:group 와 posts/:postId 가 겹침.. 어쩔수없이 그룹도 같이 받게됨
+router.patch('/:postId', authMiddleware, postEditValidator, async (req, res, next) => {
   try {
-    const { group, postId } = req.params;
+    const { postId } = req.params;
     const { UserId } = req.user;
     const { postContent, postPicture, keywords } = req.body;
+
+	//이미지가 유효한지 (jpg, png 등...)
+	if (postPicture) {
+        postPicture.forEach((i) => {
+          console.log('검사할것: ' + i);
+          const ext = i.replace(/(\w|-)+./, '');
+          if (!['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov'].includes(ext)) {
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
+              status: HTTP_STATUS.BAD_REQUEST,
+              message: MESSAGES.POSTS.CREATE.POST_PICTURE.INVALID_FORMAT,
+            });
+          }
+        });
+      }
+
+    const findPost = await prisma.posts.findFirst({
+      where: {
+		UserId,
+		postId: +postId,
+      },
+    });
+    if (!findPost) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: MESSAGES.POSTS.UPDATE.IS_NOT_EXIST,
+      });
+    }
+
+	const myPost = await prisma.posts.update({
+        data: {
+			UserId: +UserId,
+			postContent,
+			postPicture,
+			keywords,
+		  },
+		where: {
+			UserId: +UserId,
+			postId: +postId,
+		},
+	})
+
+	return res.status(HTTP_STATUS.CREATED).json({
+        status: HTTP_STATUS.CREATED,
+        message: MESSAGES.POSTS.UPDATE.SUCCEED,
+        data: {
+          post: myPost,
+        },
+      });
+
+
   } catch (err) {
     next(err);
   }
