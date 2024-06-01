@@ -10,12 +10,15 @@ export const MESSAGES = {
         REQUIRED: '비밀번호를 입력해주세요.',
         MIN_LENGTH: '비밀번호는 6자리 이상이어야 합니다.',
       },
-      PASSWORD_CONFIRM: {
-        REQUIRED: '비밀번호 확인을 입력해주세요.',
-        NOT_MATCHED: '입력한 두 비밀번호가 일치하지 않습니다.',
-      },
       NAME: {
         REQUIRED: '이름을 입력해주세요.',
+      },
+      //name, nickname, selfIntroduction
+      NICKNAME: {
+        REQUIRED: '닉네임을 입력해주세요.',
+      },
+      SELF_INTRODUCTION: {
+        REQUIRED: '한줄소개를 입력해주세요.',
       },
     },
     SIGN_UP: {
