@@ -1,9 +1,9 @@
 import express from 'express';
 import dotEnv from 'dotenv';
 import authRouter from './routers/auth.router.js';
-import usersRouter from './routers/users.router.js';
-import postsRouter from './routers/posts.router.js';
-import commentsRouter from './routers/comments.router.js';
+// import usersRouter from './routers/users.router.js';
+// import postsRouter from './routers/posts.router.js';
+// import commentsRouter from './routers/comments.router.js';
 import errorHandler from './middlewares/error-handler.middleware.js';
 
 dotEnv.config();
@@ -17,9 +17,9 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', [authRouter]);
-app.use('/users', [usersRouter]);
-app.use('/posts', [postsRouter]);
-app.use('/comments', [commentsRouter]);
+// app.use('/users', [usersRouter]);
+// app.use('/posts', [postsRouter]);
+// app.use('/comments', [commentsRouter]);
 
 app.use(errorHandler);
 

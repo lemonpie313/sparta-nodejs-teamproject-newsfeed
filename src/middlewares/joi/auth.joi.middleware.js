@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import { MESSAGES } from '../../const/messages.const.js';
-//검증할 수 있는 틀
+
 const signUpSchema = Joi.object({
   email: Joi.string().email().required().messages({
     'any.required': MESSAGES.AUTH.COMMON.EMAIL.REQUIRED,
@@ -20,7 +20,7 @@ const signUpSchema = Joi.object({
     'any.required': MESSAGES.AUTH.COMMON.SELF_INTRODUCTION.REQUIRED,
   }),
 });
-//검증하는 곳
+
 const signUpValidator = async (req, res, next) => {
   try {
     await signUpSchema.validateAsync(req.body);
