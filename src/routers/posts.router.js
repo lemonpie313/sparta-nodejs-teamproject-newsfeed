@@ -22,12 +22,6 @@ router.post('/:group', authMiddleware, async (req, res, next) => {
 				message: MESSAGES.POSTS.CREATE.NO_POSTCONTENT,
 			});
 		}
-		if (!postPicture) {
-			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				status: HTTP_STATUS.BAD_REQUEST,
-				message: MESSAGES.POSTS.CREATE.NO_POSTPICTURE,
-			});
-		}
 		if (!keywords) {
 			return res.status(HTTP_STATUS.BAD_REQUEST).json({
 				status: HTTP_STATUS.BAD_REQUEST,
@@ -43,7 +37,7 @@ router.post('/:group', authMiddleware, async (req, res, next) => {
 				group,
 				UserId: +UserId,
 				postContent,
-				postPicture,
+				postPicture: postPicture ?? [],
 				keywords,
 			}
 		});
