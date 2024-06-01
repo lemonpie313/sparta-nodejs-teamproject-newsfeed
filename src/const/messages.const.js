@@ -40,4 +40,12 @@ export const MESSAGES = {
   POSTS: {
     //알아서 추가해주세요!!
   },
+  JWT: {
+    NONE: '인증 정보가 없습니다.',
+    NOT_TYPE: '지원하지 않는 인증방식입니다.',
+    NO_MATCH: '인증 정보와 일치하는 사용자가 없습니다.',
+    EXPIRED: '인증 정보가 만료되었습니다.',
+    NOT_AVAILABLE: '인증 정보가 유효하지 않습니다.',
+    ELSE: '비정상적인 접근입니다.',
+  },
 };
