@@ -7,7 +7,7 @@ import { HTTP_STATUS } from '../const/http-status.const.js';
 const router = express.Router();
 
 //게시물 작성
-router.post('/:group', authMiddleware, async (req, res, next) => {
+router.post('/:group', /*authMiddleware,*/ async (req, res, next) => {
 	try {
 		// 1. 필요한 정보 가져오기
 		// 1-1. request body로부터 postContent, postPicture, keywords 받아온다.
@@ -61,7 +61,7 @@ router.post('/:group', authMiddleware, async (req, res, next) => {
 });
 
 // 내 게시물 목록 조회
-router.get('/me', authMiddleware, async (req, res, next) => {
+router.get('/me', /*authMiddleware,*/ async (req, res, next) => {
 	try {
 		// 1. 받아온 req.user에서 userId 가져온다.
 		const { UserId } = req.user;
@@ -88,6 +88,22 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 		next(err);
 	}
 });
+
+router.get('/:group/:postId', /*authMiddleware,*/ async (req, res, next) => { // posts/:group 와 posts/:postId 가 겹침.. 어쩔수없이 그룹도 같이 받게됨
+	try{
+		const { group, postId } = req.params;
+		const { UserId } = req.user;
+		const { postContent, postPicture, kewwords } = req.body;
+		console.log(group);
+		console.log(postId);
+		return res.status(HTTP_STATUS.OK).json({
+			status: HTTP_STATUS.OK,
+			message: MESSAGES.POSTS.READ.SUCCEED,
+		})
+	} catch (err) {
+		next(err);
+	}
+})
 
 
 export default router;
