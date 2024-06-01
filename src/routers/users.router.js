@@ -21,6 +21,7 @@ router.get('/', authMiddleware, async (req, res, next) => {
             name: true,
             nickname: true,
             selfIntroduction: true,
+            profilePicture: true,
             createdAt: true,
             updatedAt: true,
           },

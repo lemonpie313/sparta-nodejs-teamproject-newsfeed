@@ -1,13 +1,13 @@
 import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
-import authorizationMiddleware from '../middlewares/access-token.middleware.js';
+import authMiddleware from '../middlewares/access-token.middleware.js';
 import { MESSAGES } from '../const/messages.const.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
 
 const router = express.Router();
 
 //게시물 작성
-router.post('/:group', authorizationMiddleware, async (req, res, next) => {
+router.post('/:group', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 필요한 정보 가져오기
 		// 1-1. request body로부터 postContent, postPicture, keywords 받아온다.
@@ -61,7 +61,7 @@ router.post('/:group', authorizationMiddleware, async (req, res, next) => {
 });
 
 // 내 게시물 목록 조회
-router.get('/me', authorizationMiddleware, async (req, res, next) => {
+router.get('/me', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 받아온 req.user에서 userId 가져온다.
 		const { UserId } = req.user;
