@@ -74,20 +74,52 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 			orderBy: {
 				createdAt: "desc"
 			}
-		})
-
+		});
 
 		// 3. 결과 반환한다.
 		return res.status(HTTP_STATUS.OK).json({
 			status: HTTP_STATUS.OK,
 			message: MESSAGES.POSTS.READ.SUCCEED,
 			data: posts,
-		})
-
+		});
 	} catch (err) {
 		next(err);
 	}
 });
 
+// 게시물 상세 조회
+router.get('/:postId', authMiddleware, async (req, res, next) => {
+	try {
+
+		// 1. postId 받아오기
+		const { postId } = req.params;
+
+
+		// 2. 로그인한 사용자의 게시물을 조회한다.
+		const detailPost = await prisma.posts.findUnique({
+			where: {
+				postId: +postId,
+			},
+		});
+
+		// 3. 게시물 번호가 있는지 확인해서 없으면 오류 반환
+		// 
+		if (detailPost === null) {
+			return res.status(HTTP_STATUS.NOT_FOUND).json({
+				status: HTTP_STATUS.NOT_FOUND,
+				message: MESSAGES.POSTS.READ.IS_NOT_EXIST,
+			});
+		}
+
+		return res.status(HTTP_STATUS.OK).json({
+			status: HTTP_STATUS.OK,
+			message: MESSAGES.POSTS.READ.SUCCEED,
+			data: detailPost,
+		});
+
+	} catch (err) {
+		next(err);
+	}
+});
 
 export default router;

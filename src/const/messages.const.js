@@ -47,6 +47,7 @@ export const MESSAGES = {
 		},
 		READ: {
 			SUCCEED: '조회가 완료되었습니다.',
+			IS_NOT_EXIST: '게시물이 존재하지 않습니다.'
 		},
 		UPDATE: {
 			// 화이팅
