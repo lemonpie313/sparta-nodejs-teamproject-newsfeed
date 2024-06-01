@@ -1,6 +1,5 @@
 import Joi from 'joi';
 import { MESSAGES } from '../../const/messages.const.js';
-import router from '../../routers/auth.router.js';
 
 const signUpSchema = Joi.object({
   email: Joi.string().email().required().messages({

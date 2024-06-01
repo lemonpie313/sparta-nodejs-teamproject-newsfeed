@@ -3,41 +3,35 @@ import { prisma } from '../utils/prisma/index.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { MESSAGES } from '../const/messages.const.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
+import { postValidator } from '../middlewares/joi/posts.joi.middleware.js';
+import { GROUP } from '../const/group.const.js';
+
 
 const router = express.Router();
 
 //게시물 작성
-router.post('/:group', /*authMiddleware,*/ async (req, res, next) => {
+router.post('/:group', authMiddleware, postValidator, async (req, res, next) => {
 	try {
-		// 1. 필요한 정보 가져오기
-		// 1-1. request body로부터 postContent, postPicture, keywords 받아온다.
 		const { postContent, postPicture, keywords } = req.body;
-		// 1-2. group 가져오기
 		const { group } = req.params;
 
-		// 2. 만약에 셋 중 하나라도 없으면 에러 처리
-		if (!postContent) {
+		//이미지가 유효한지
+		if (/(\.gif|\.jpg|\.jpeg)$/i.test(postPicture.value) == false) {
 			return res.status(HTTP_STATUS.BAD_REQUEST).json({
 				status: HTTP_STATUS.BAD_REQUEST,
-				message: MESSAGES.POSTS.CREATE.NO_POSTCONTENT,
-			});
-		}
-		if (!postPicture) {
-			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				status: HTTP_STATUS.BAD_REQUEST,
-				message: MESSAGES.POSTS.CREATE.NO_POSTPICTURE,
-			});
-		}
-		if (!keywords) {
-			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				status: HTTP_STATUS.BAD_REQUEST,
-				message: MESSAGES.POSTS.CREATE.NO_KEYWORDS,
+				message: MESSAGES.POSTS.CREATE.POST_PICTURE.INVALID_FORMAT,
 			});
 		}
 
-		// 3. 작성자 유저 ID를 req.user로 받아오고,
+		//그룹 이름 검사
+		if (!GROUP.includes(group)) {
+			return res.status(HTTP_STATUS.NOT_FOUND).json({
+				status: HTTP_STATUS.NOT_FOUND,
+				message: MESSAGES.POSTS.CREATE.GROUP.INVALID,
+			});
+		}
+
 		const { UserId } = req.user;
-		// 4. 작성한 내용을 바탕으로 posts 테이블에 생성
 		const post = await prisma.posts.create({
 			data: {
 				group,
@@ -61,7 +55,7 @@ router.post('/:group', /*authMiddleware,*/ async (req, res, next) => {
 });
 
 // 내 게시물 목록 조회
-router.get('/me', /*authMiddleware,*/ async (req, res, next) => {
+router.get('/me', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 받아온 req.user에서 userId 가져온다.
 		const { UserId } = req.user;
@@ -89,17 +83,12 @@ router.get('/me', /*authMiddleware,*/ async (req, res, next) => {
 	}
 });
 
-router.get('/:group/:postId', /*authMiddleware,*/ async (req, res, next) => { // posts/:group 와 posts/:postId 가 겹침.. 어쩔수없이 그룹도 같이 받게됨
+router.get('/:group/:postId', authMiddleware, async (req, res, next) => { // posts/:group 와 posts/:postId 가 겹침.. 어쩔수없이 그룹도 같이 받게됨
 	try{
 		const { group, postId } = req.params;
 		const { UserId } = req.user;
-		const { postContent, postPicture, kewwords } = req.body;
-		console.log(group);
-		console.log(postId);
-		return res.status(HTTP_STATUS.OK).json({
-			status: HTTP_STATUS.OK,
-			message: MESSAGES.POSTS.READ.SUCCEED,
-		})
+		const { postContent, postPicture, keywords } = req.body;
+		
 	} catch (err) {
 		next(err);
 	}

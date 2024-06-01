@@ -39,9 +39,20 @@ export const MESSAGES = {
 	},
 	POSTS: {
 		CREATE: {
-			NO_POSTCONTENT: '게시글 내용을 입력해 주세요.',
-			NO_POSTPICTURE: '사진 url을 입력해 주세요.',
-			NO_KEYWORDS: '키워드를 입력해 주세요.',
+			POST_CONTENT:
+			{
+				REQUIRED: '게시글 내용을 입력해 주세요.',
+			},
+			POST_PICTURE:
+			{
+				INVALID_FORMAT: '지원하지 않는 형식입니다.',
+			},
+			KEYWORDS: {
+				MAX_LENGTH: '키워드는 10글자 이내로만 작성 가능합니다.',
+			},
+			GROUP: {
+				INVALID: '잘못된 경로입니다.',
+			},
 			SUCCEED: '게시물 작성이 완료되었습니다.',
 
 		},
