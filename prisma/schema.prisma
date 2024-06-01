@@ -29,12 +29,12 @@ model UserInfos {
   name             String   @map("name")
   nickname         String   @map("nickname")
   selfIntroduction String   @map("self_introduction") @db.Text
-  profilePicture   String   @map("profile_picture") // 아직 확실히 안정함
-  prefer           Json     @map("prefer")
-  likePosts        Json     @map("like_posts")
-  likeComments     Json     @map("like_comments")
-  followings       Json     @map("followings") // ERD에 'follows' -> 'followings' 로 교체
-  followers        Json     @map("followers")
+  // profilePicture   String   @default("") @map("profile_picture") // 아직 확실히 안정함
+  // prefer           Json     @default(dbgenerated()) @map("prefer")
+  // likePosts        Json     @default(dbgenerated()) @map("like_posts")
+  // likeComments     Json     @default(dbgenerated()) @map("like_comments")
+  // followings       Json     @default(dbgenerated()) @map("followings") // ERD에 'follows' -> 'followings' 로 교체
+  // followers        Json     @default(dbgenerated()) @map("followers")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

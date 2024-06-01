@@ -4,6 +4,7 @@ import { signUpValidator } from '../middlewares/joi/auth.joi.middleware.js';
 import { MESSAGES } from '../const/messages.const.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
 import bycrpt from 'bcrypt';
+import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
@@ -26,7 +27,45 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 
     const hashedPassword = await bycrpt.hash(password, 10);
 
-    return res.status(200).json('sign-up');
+    const userInfo = await prisma.$transaction(
+      async (tx) => {
+        const user = await tx.users.create({
+          data: {
+            email,
+            password: hashedPassword,
+          },
+          select: {
+            userId: true,
+            email: true,
+          },
+        });
+        const userInfo = await tx.userInfos.create({
+          data: {
+            name,
+            nickname,
+            selfIntroduction,
+          },
+          select: {
+            name: true,
+            role: true,
+            nickname: true,
+            selfIntroduction: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+        return { ...user, ...userInfo };
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+      }
+    );
+
+    return res.status(HTTP_STATUS.CREATED).json({
+      status: HTTP_STATUS.CREATED,
+      message: MESSAGES.AUTH.SIGN_UP.SUCCEED,
+      data: { userInfo },
+    });
   } catch (err) {
     next(err);
   }
