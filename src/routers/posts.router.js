@@ -51,7 +51,7 @@ router.post(
           UserId: +UserId,
           postContent,
           postPicture: postPicture ?? [],
-          keywords: keywords ?? '',
+          keywords: keywords ?? [],
         },
       });
 

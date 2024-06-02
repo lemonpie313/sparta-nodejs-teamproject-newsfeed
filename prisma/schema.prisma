@@ -56,7 +56,7 @@ model Posts {
     group        Group    @map("group")
     postContent  String   @map("self_introduction") @db.Text
     postPicture  Json?    @map("post_pictures")
-    keywords     Json     @map("keywords")
+    keywords     Json?    @map("keywords")
     createdAt    DateTime @default(now()) @map("created_at")
     updatedAt    DateTime @updatedAt @map("updated_at")
 

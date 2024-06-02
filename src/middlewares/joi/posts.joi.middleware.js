@@ -6,9 +6,7 @@ const postSchema = Joi.object({
     'any.required': MESSAGES.POSTS.CREATE.POST_CONTENT.REQUIRED,
   }),
   postPicture: Joi.array(),
-  keywords: Joi.string().min(0).max(10).messages({
-    'string.min': MESSAGES.POSTS.CREATE.KEYWORDS.MAX_LENGTH,
-  }),
+  keywords: Joi.array(),
 });
 
 const postEditSchema = Joi.object({
