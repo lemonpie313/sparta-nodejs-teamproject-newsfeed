@@ -272,41 +272,56 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
 router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
   try {
     const { postId } = req.params;
-    const { user } = req.user;
+    const { UserId } = req.user;
 
-    const post = await prisma.posts.findFirst({
+    console.log(UserId);
+
+    //게시물 찾기
+    const postLikes = await prisma.postLikes.findFirst({
       where: {
-        postId: +postId,
+        PostId: +postId,
       },
       select: {
-        postId: true,
+        PostId: true,
+        postLikesId: true,
+        postLikes: true,
       },
     });
 
-    if (!post) {
+    if (!postLikes) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         status: HTTP_STATUS.NOT_FOUND,
         message: MESSAGES.POSTS.LIKES.IS_NOT_EXIST,
       });
     }
 
-    const updatedPost = await prisma.postLikes.upsert({
+    //내정보 > 좋아요 여부
+    const userInfo = prisma.userInfos.findFirst({
+      where: {
+        UserId: +UserId,
+      },
+    });
+
+    //좋아요 반영
+    const postLikesUpdated = await prisma.postLikes.update({
+      data: {
+        postLikes: postLikes.postLikes + 1,
+      },
       where: {
         PostId: +postId,
       },
-      update: {
-        postLikes: 3,
-      },
-      create: {
-        PostId: post.postId,
-        postLikes: 1,
-      },
     });
+
+    // const userInfoUpdate = prisma.userInfos.update({
+    //   data: {
+
+    //   }
+    // })
 
     res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.LIKES.SUCCEED,
-      data: post,
+      data: { postLikesUpdated, userInfo },
     });
   } catch (err) {
     next(err);
