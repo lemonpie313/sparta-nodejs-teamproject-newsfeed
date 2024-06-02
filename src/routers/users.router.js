@@ -10,9 +10,7 @@ const router = express.Router();
 
 router.get('/', authMiddleware, async (req, res, next) => {
   try {
-    
     const { UserId } = req.user;
-    console.log(UserId);
     const user = await prisma.Users.findFirst({
       where: {
         userId: UserId,

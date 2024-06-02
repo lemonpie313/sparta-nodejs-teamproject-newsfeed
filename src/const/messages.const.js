@@ -74,12 +74,34 @@ export const MESSAGES = {
     },
     READ: {
       SUCCEED: '내 게시물 조회가 완료되었습니다.',
+      IS_NOT_EXIST: '게시물이 존재하지 않습니다.',
     },
     UPDATE: {
       SUCCEED: '게시물 수정이 완료되었습니다.',
     },
     DELETE: {
+      NO_POSTID: '해당 게시글이 존재하지 않습니다.',
+      POST_ID_NOT_MATCHED: '작성자가 다른 게시물입니다.',
+      SUCCEED: '삭제가 완료되었습니다.',
+    },
+  },
+  COMMENTS: {
+    CREATE: {
+      NO_COMMENTS: '댓글을 입력해 주세요.',
+      SUCCEED: '댓글 작성에 성공하였습니다.',
+    },
+    READ: {
       // 화이팅
+    },
+    UPDATE: {
+      NO_COMMENTS: '댓글을 입력해 주세요.',
+      NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
+      SUCCEED: '댓글 수정에 성공하였습니다.',
+    },
+    DELETE: {
+      NO_COMMENTS: '댓글이 존재하지 않습니다.',
+      NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
+      SUCCEED: '댓글 삭제에 성공하였습니다.',
     },
   },
   JWT: {
