@@ -41,20 +41,20 @@ router.get('/', authMiddleware, async (req, res, next) => {
   }
 });
 
-//이메일을 바꾸는게 맞나?
+// 내 정보 수정 API
 router.patch(
   '/',
   authMiddleware,
   userInfoUpdateValidator,
   async (req, res, next) => {
     try {
-      const { userId, role } = req.user;
+      const { UserId, role } = req.user;
       const { name, nickname, selfIntroduction, profilePicture, password } =
         req.body;
 
       const user = await prisma.Users.findFirst({
         where: {
-          userId,
+          userId: UserId,
         },
         select: {
           userId: true,
@@ -67,7 +67,8 @@ router.patch(
           message: MESSAGES.USERS.UPDATE.IS_NOT_EXIST,
         });
       }
-
+      console.log(await bycrpt.compare(password, user.password));
+      console.log(user.password);
       if (!(await bycrpt.compare(password, user.password))) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           status: HTTP_STATUS.BAD_REQUEST,

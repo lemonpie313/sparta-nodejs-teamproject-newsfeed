@@ -73,7 +73,7 @@ export const MESSAGES = {
       SUCCEED: '게시물 작성이 완료되었습니다.',
     },
     READ: {
-      SUCCEED: '내 게시물 조회가 완료되었습니다.',
+      SUCCEED: '게시물 조회가 완료되었습니다.',
       IS_NOT_EXIST: '게시물이 존재하지 않습니다.',
     },
     UPDATE: {
@@ -96,6 +96,7 @@ export const MESSAGES = {
     UPDATE: {
       NO_COMMENTS: '댓글을 입력해 주세요.',
       NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
+      NO_EDIT: '수정될 내용이 없습니다.',
       SUCCEED: '댓글 수정에 성공하였습니다.',
     },
     DELETE: {
