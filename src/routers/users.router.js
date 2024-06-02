@@ -48,7 +48,7 @@ router.patch(
   userInfoUpdateValidator,
   async (req, res, next) => {
     try {
-      const { userId, role } = req.user;
+      const { userId } = req.user;
       const { name, nickname, selfIntroduction, profilePicture, password } =
         req.body;
 

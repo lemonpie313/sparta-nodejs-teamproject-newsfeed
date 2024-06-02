@@ -220,6 +220,7 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
     //해당 게시물이 존재 하는지 검사 params에서 가져온 id = post에서 가져온 id 일치인지
     const post = await prisma.posts.findFirst({
       where: {
+        userId: UserId,
         postId: +postId,
       },
     });
