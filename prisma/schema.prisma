@@ -8,9 +8,10 @@ datasource db {
 }
 
 enum Group {
-    IVE
     MONSTAX
+    WJSN
     CRAVITY
+    IVE
 }
 
 model Users {
@@ -30,20 +31,24 @@ model Users {
 }
 
 model UserInfos {
-    userInfoId       Int      @id @default(autoincrement()) @map("user_info_id")
-    UserId           Int      @unique @map("user_id")
-    role             String   @default("FAN") @map("role")
-    name             String   @map("name")
-    nickname         String   @map("nickname")
-    selfIntroduction String   @map("self_introduction") @db.Text
-    profilePicture   String?  @default("picture.jpg") @map("profile_picture") // 아직 확실히 안정함
-    prefer           Json?    @map("prefer")
-    likePosts        Json?    @map("like_posts")
-    likeComments     Json?    @map("like_comments")
-    followings       Json?    @map("followings")
-    followers        Json?    @map("followers")
-    createdAt        DateTime @default(now()) @map("created_at")
-    updatedAt        DateTime @updatedAt @map("updated_at")
+    userInfoId Int @id @default(autoincrement()) @map("user_info_id")
+    UserId     Int @unique @map("user_id")
+
+    role             String  @default("FAN") @map("role")
+    name             String  @map("name")
+    nickname         String  @map("nickname")
+    selfIntroduction String  @map("self_introduction") @db.Text
+    profilePicture   String? @default("picture.jpg") @map("profile_picture") // 아직 확실히 안정함
+
+    prefer       Json? @map("prefer")
+    likePosts    Json? @map("like_posts")
+    likeComments Json? @map("like_comments")
+
+    followings Json? @map("followings")
+    followers  Json? @map("followers")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
 
     User Users @relation(fields: [UserId], references: [userId], onDelete: Cascade)
 
@@ -51,14 +56,16 @@ model UserInfos {
 }
 
 model Posts {
-    postId      Int      @id @default(autoincrement()) @map("post_id")
-    UserId      Int      @map("user_id")
-    group       Group    @map("group")
-    postContent String   @map("self_introduction") @db.Text
-    postPicture Json?    @map("post_pictures")
-    keywords    Json?    @map("keywords")
-    createdAt   DateTime @default(now()) @map("created_at")
-    updatedAt   DateTime @updatedAt @map("updated_at")
+    postId Int   @id @default(autoincrement()) @map("post_id")
+    UserId Int   @map("user_id")
+    group  Group @map("group")
+
+    postContent String @map("self_introduction") @db.Text
+    postPicture Json?  @map("post_pictures")
+    keywords    Json?  @map("keywords")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
 
     // PostPictures PostPictures[]
     PostLikes PostLikes?
@@ -69,10 +76,12 @@ model Posts {
 }
 
 model Comments {
-    commentId Int      @id @default(autoincrement()) @map("comment_id")
-    PostId    Int      @map("post_id")
-    UserId    Int      @map("user_id")
-    comment   String   @map("comment") @db.Text
+    commentId Int @id @default(autoincrement()) @map("comment_id")
+    PostId    Int @map("post_id")
+    UserId    Int @map("user_id")
+
+    comment String @map("comment") @db.Text
+
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -84,11 +93,12 @@ model Comments {
 }
 
 model PostLikes {
-    postLikesId Int      @id @default(autoincrement()) @map("post_likes_id")
-    PostId      Int      @unique @map("post_id")
-    postLikes   Int      @default(0) @map("post_likes")
-    createdAt   DateTime @default(now()) @map("created_at")
-    updatedAt   DateTime @updatedAt @map("updated_at")
+    postLikesId Int @id @default(autoincrement()) @map("post_likes_id")
+    PostId      Int @unique @map("post_id")
+    postLikes   Int @default(0) @map("post_likes")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
 
     Post Posts @relation(fields: [PostId], references: [postId], onDelete: Cascade)
 
@@ -96,11 +106,12 @@ model PostLikes {
 }
 
 model CommentLikes {
-    commentLikesId Int      @id @default(autoincrement()) @map("comment_likes_id")
-    CommentId      Int      @unique @map("comment_id")
-    commentLikes   Int      @default(0) @map("comment_likes")
-    createdAt      DateTime @default(now()) @map("created_at")
-    updatedAt      DateTime @updatedAt @map("updated_at")
+    commentLikesId Int @id @default(autoincrement()) @map("comment_likes_id")
+    CommentId      Int @unique @map("comment_id")
+    commentLikes   Int @default(0) @map("comment_likes")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
 
     Comment Comments @relation(fields: [CommentId], references: [commentId], onDelete: Cascade)
 
@@ -108,11 +119,14 @@ model CommentLikes {
 }
 
 model RefreshToken {
-    tokenId   Int      @id @default(autoincrement()) @map("token_id")
-    userId    Int      @unique @map("user_id")
-    token     String   @map("token") @db.Text
+    tokenId Int @id @default(autoincrement()) @map("token_id")
+    userId  Int @unique @map("user_id")
+
+    token String @map("token") @db.Text
+
     createdAt DateTime @default(now()) @map("created_at")
-    User      Users    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+    User Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
     @@map("refresh_token")
 }

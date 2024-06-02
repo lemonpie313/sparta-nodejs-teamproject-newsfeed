@@ -94,6 +94,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
   }
 });
 
+// 게시물 수정
 router.patch(
   '/:postId',
   authMiddleware,
@@ -165,29 +166,28 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
 
     // 2. 로그인한 사용자의 게시물을 조회한다.
     const detailPost = await prisma.posts.findUnique({
-		where: {
-			postId: +postId,
-		},
-		select: {
-			postId: true,
-			postContent: true,
-			postPicture: true,
-			keywords: true,
-			createdAt: true,
-			updatedAt: true,
-			User: {
-				select: {
-					UserInfos: {
-						select: {
-							nickname: true,
-							UserId: true
-						}
-					}
-				}
-			}
-		}
-	});
-
+      where: {
+        postId: +postId,
+      },
+      select: {
+        postId: true,
+        postContent: true,
+        postPicture: true,
+        keywords: true,
+        createdAt: true,
+        updatedAt: true,
+        User: {
+          select: {
+            UserInfos: {
+              select: {
+                nickname: true,
+                UserId: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
     // 3. 게시물 번호가 있는지 확인해서 없으면 오류 반환
     //
@@ -197,7 +197,7 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
         message: MESSAGES.POSTS.READ.IS_NOT_EXIST,
       });
     }
-
+    // 4.
     return res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.READ.SUCCEED,
@@ -222,7 +222,7 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
         postId: +postId,
       },
     });
-    
+
     if (!post) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         status: HTTP_STATUS.NOT_FOUND,
@@ -235,7 +235,7 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
     //     message: MESSAGES.POSTS.DELETE.POST_ID_NOT_MATCHED,
     //   });
     // }
-	
+
     await prisma.posts.delete({
       where: { postId: +postId },
     });
