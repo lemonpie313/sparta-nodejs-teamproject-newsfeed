@@ -269,6 +269,11 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
   }
 });
 
+/* 게시물 좋아요 */
+//userInfo의 likePosts에 이미 해당 게시물이 있다
+// -> 좋아요 취소, likePosts에서 postId 삭제, prefer 키워드 카운트 다운
+// 해당 게시물이 없다
+// -> 좋아요 반영, likePosts에 postId 추가, prefer 키워드 카운트 업
 router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
   try {
     const { postId } = req.params;
@@ -312,6 +317,7 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
     });
 
     //좋아요 수 수정 / userInfo 내용 수정
+    //근데 좋아요 취소할때 userInfo에서 prefer, likePosts 삭제는 데이터가 길면 오래걸릴텐데.......
     const keywords = post.keywords;
     let updatedLikes = post.PostLikes.postLikes;
     let userLikes = userInfo.likePosts;
@@ -319,31 +325,29 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
     if (userInfo.likePosts.includes(post.postId)) {
       updatedLikes -= 1;
       userLikes = userLikes.filter((cur) => {
-        cur != post.postId; //근데 삭제는 배열이 길면 오래걸릴텐데.......
-        keywords.forEach((key) => {
-          if (userPrefer[`${key}`] != 1) {
-            userPrefer[`${key}`] -= 1;
-          } else {
-            //삭제
-          }
-        });
+        cur != post.postId;
+      });
+      keywords.forEach((key) => {
+        if (userPrefer[`${key}`] <= 1) {
+          delete userPrefer[`${key}`];
+        } else {
+          userPrefer[`${key}`] -= 1;
+        }
       });
     } else {
       updatedLikes += 1;
       userLikes.push(+postId);
       keywords.forEach((key) => {
-        if (Object.keys(userPrefer).includes(`${key}`)) {
-          userPrefer[`${key}`] += 1;
-        } else {
+        if (
+          !Object.keys(userPrefer).includes(`${key}`) ||
+          userPrefer[`${key}`] == 0
+        ) {
           userPrefer[`${key}`] = 1;
+        } else {
+          userPrefer[`${key}`] += 1;
         }
       });
     }
-
-    // 문제점
-    // : prefer에 좋아요 누른 글의 키워드를 개수로 저장해야함
-    // -> 배열이 아니라 따로 db를 파야됨.. 객체로 저장하면 수정이 빡셈
-    // +) 아니다 할수는 있겠다... 근데 이것도 데이터 쌓이면 처리가 오래걸릴지도
 
     //좋아요 반영
     const postLikesUpdated = await prisma.postLikes.update({
