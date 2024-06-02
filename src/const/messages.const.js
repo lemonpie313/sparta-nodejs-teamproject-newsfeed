@@ -12,13 +12,16 @@ export const MESSAGES = {
       },
       NAME: {
         REQUIRED: '이름을 입력해주세요.',
+        EMPTY: '이름은 비워둘 수 없습니다',
       },
       //name, nickname, selfIntroduction
       NICKNAME: {
         REQUIRED: '닉네임을 입력해주세요.',
+        EMPTY: '닉네임은 비워둘 수 없습니다',
       },
       SELF_INTRODUCTION: {
         REQUIRED: '한줄소개를 입력해주세요.',
+        EMPTY: '한줄소개는 비워둘 수 없습니다',
       },
     },
     SIGN_UP: {
@@ -30,11 +33,27 @@ export const MESSAGES = {
       PW_NOT_MATCHED: '비밀번호가 일치하지 않습니다.',
       SUCCEED: '로그인 되었습니다.',
     },
+    LOGOUT: {
+      SUCCEED: '로그아웃 되었습니다.',
+    },
+  },
+  USERS: {
     READ: {
       SUCCEED: '회원정보 조회에 성공하였습니다.',
     },
-    LOGOUT: {
-      SUCCEED: '로그아웃 되었습니다.',
+    UPDATE: {
+      NAME: {
+        EMPTY: '이름은 1글자 이상 입력해야 합니다.',
+      },
+      NICKNAME: {
+        EMPTY: '닉네임은 1글자 이상 입력해야 합니다.',
+      },
+      SELF_INTRODUCTION: {
+        EMPTY: '자기소개는 1글자 이상 입력해야 합니다.',
+      },
+      IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
+      PW_NOT_MATCHED: '비밀번호가 일치하지 않습니다.',
+      SUCCEED: '회원정보 수정이 완료되었습니다.',
     },
   },
   POSTS: {

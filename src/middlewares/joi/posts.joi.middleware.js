@@ -38,10 +38,3 @@ const postEditValidator = async (req, res, next) => {
 };
 
 export { postValidator, postEditValidator };
-
-// if (!postPicture) {
-//     return res.status(HTTP_STATUS.BAD_REQUEST).json({
-//         status: HTTP_STATUS.BAD_REQUEST,
-//         message: MESSAGES.POSTS.CREATE.NO_POSTPICTURE,
-//     });
-// }

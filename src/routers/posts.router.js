@@ -3,7 +3,10 @@ import { prisma } from '../utils/prisma/index.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { MESSAGES } from '../const/messages.const.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
-import { postValidator, postEditValidator } from '../middlewares/joi/posts.joi.middleware.js';
+import {
+  postValidator,
+  postEditValidator,
+} from '../middlewares/joi/posts.joi.middleware.js';
 import { GROUP } from '../const/group.const.js';
 
 const router = express.Router();
@@ -48,7 +51,7 @@ router.post(
           UserId: +UserId,
           postContent,
           postPicture: postPicture ?? [],
-          keywords: keywords ?? "",
+          keywords: keywords ?? '',
         },
       });
 
@@ -125,14 +128,18 @@ router.get('/me', authMiddleware, async (req, res, next) => {
   }
 });
 
-router.patch('/:postId', authMiddleware, postEditValidator, async (req, res, next) => {
-  try {
-    const { postId } = req.params;
-    const { UserId } = req.user;
-    const { postContent, postPicture, keywords } = req.body;
+router.patch(
+  '/:postId',
+  authMiddleware,
+  postEditValidator,
+  async (req, res, next) => {
+    try {
+      const { postId } = req.params;
+      const { UserId } = req.user;
+      const { postContent, postPicture, keywords } = req.body;
 
-	//이미지가 유효한지 (jpg, png 등...)
-	if (postPicture) {
+      //이미지가 유효한지 (jpg, png 등...)
+      if (postPicture) {
         postPicture.forEach((i) => {
           console.log('검사할것: ' + i);
           const ext = i.replace(/(\w|-)+./, '');
@@ -145,44 +152,43 @@ router.patch('/:postId', authMiddleware, postEditValidator, async (req, res, nex
         });
       }
 
-    const findPost = await prisma.posts.findFirst({
-      where: {
-		UserId,
-		postId: +postId,
-      },
-    });
-    if (!findPost) {
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
-        status: HTTP_STATUS.FORBIDDEN,
-        message: MESSAGES.POSTS.UPDATE.IS_NOT_EXIST,
+      const findPost = await prisma.posts.findFirst({
+        where: {
+          UserId,
+          postId: +postId,
+        },
       });
-    }
+      if (!findPost) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
+          status: HTTP_STATUS.FORBIDDEN,
+          message: MESSAGES.POSTS.UPDATE.IS_NOT_EXIST,
+        });
+      }
 
-	const myPost = await prisma.posts.update({
+      const myPost = await prisma.posts.update({
         data: {
-			UserId: +UserId,
-			postContent,
-			postPicture,
-			keywords,
-		  },
-		where: {
-			UserId: +UserId,
-			postId: +postId,
-		},
-	})
+          UserId: +UserId,
+          postContent,
+          postPicture,
+          keywords,
+        },
+        where: {
+          UserId: +UserId,
+          postId: +postId,
+        },
+      });
 
-	return res.status(HTTP_STATUS.CREATED).json({
+      return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
         message: MESSAGES.POSTS.UPDATE.SUCCEED,
         data: {
           post: myPost,
         },
       });
-
-
-  } catch (err) {
-    next(err);
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 export default router;
