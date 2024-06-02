@@ -55,40 +55,6 @@ router.post(
         },
       });
 
-      // 데이터 분리할 경우...
-      //   let pictures = [];
-      //   const post = await prisma.$transaction(
-      //     async (tx) => {
-      //       const post = await tx.posts.create({
-      //         data: {
-      //           group,
-      //           UserId: +UserId,
-      //           postContent,
-      //           keywords: keywords ?? '',
-      //         },
-      //       });
-      //       for (let cur of postPicture) {
-      //         const pic = await tx.postPictures.create({
-      //           data: {
-      //             PostId: post.postId,
-      //             postPicture: cur,
-      //           },
-      //           select: {
-      //             postPictureId: true,
-      //             PostId: true,
-      //             postPicture: true,
-      //           },
-      //         });
-
-      //         pictures.push(pic);
-      //       }
-      //       return { post, pictures };
-      //     },
-      //     {
-      //       isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-      //     }
-      //   );
-
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
         message: MESSAGES.POSTS.CREATE.SUCCEED,

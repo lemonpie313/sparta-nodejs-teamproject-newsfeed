@@ -68,18 +68,6 @@ model Posts {
     @@map("posts")
 }
 
-// model PostPictures {
-//     postPictureId Int      @id @default(autoincrement()) @map("post_picture_id")
-//     PostId        Int      @map("post_id")
-//     postPicture   String   @map("post_picture")
-//     createdAt     DateTime @default(now()) @map("created_at")
-//     updatedAt     DateTime @updatedAt @map("updated_at")
-
-//     Post Posts @relation(fields: [PostId], references: [postId], onDelete: Cascade)
-
-//     @@map("post_pictures")
-// }
-
 model Comments {
     commentId Int      @id @default(autoincrement()) @map("comment_id")
     PostId    Int      @map("post_id")
