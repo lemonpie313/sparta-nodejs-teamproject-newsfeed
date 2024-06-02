@@ -8,6 +8,7 @@ import {
   postEditValidator,
 } from '../middlewares/joi/posts.joi.middleware.js';
 import { GROUP } from '../const/group.const.js';
+import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
@@ -44,16 +45,34 @@ router.post(
         });
       }
 
-      //데이터 분리 없이 그대로 진행할 경우
-      const post = await prisma.posts.create({
-        data: {
-          group,
-          UserId: +UserId,
-          postContent,
-          postPicture: postPicture ?? [],
-          keywords: keywords ?? [],
+      const post = await prisma.$transaction(
+        async (tx) => {
+          const post = await tx.posts.create({
+            data: {
+              group,
+              UserId: +UserId,
+              postContent,
+              postPicture: postPicture ?? [],
+              keywords: keywords ?? [],
+            },
+          });
+
+          const postLikes = await tx.postLikes.create({
+            data: {
+              PostId: post.postId,
+              postLikes: 0,
+            },
+            select: {
+              postLikesId: true,
+              postLikes: true,
+            },
+          });
+          return { ...post, ...postLikes };
         },
-      });
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        }
+      );
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
@@ -244,6 +263,50 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.DELETE.SUCCEED,
       data: { postId: postId },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    const { user } = req.user;
+
+    const post = await prisma.posts.findFirst({
+      where: {
+        postId: +postId,
+      },
+      select: {
+        postId: true,
+      },
+    });
+
+    if (!post) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: MESSAGES.POSTS.LIKES.IS_NOT_EXIST,
+      });
+    }
+
+    const updatedPost = await prisma.postLikes.upsert({
+      where: {
+        PostId: +postId,
+      },
+      update: {
+        postLikes: 3,
+      },
+      create: {
+        PostId: post.postId,
+        postLikes: 1,
+      },
+    });
+
+    res.status(HTTP_STATUS.OK).json({
+      status: HTTP_STATUS.OK,
+      message: MESSAGES.POSTS.LIKES.SUCCEED,
+      data: post,
     });
   } catch (err) {
     next(err);
