@@ -91,7 +91,7 @@ export const MESSAGES = {
       SUCCEED: '댓글 작성에 성공하였습니다.',
     },
     READ: {
-      // 화이팅
+      SUCCEED: '댓글 조회에 성공하였습니다.',
     },
     UPDATE: {
       NO_COMMENTS: '댓글을 입력해 주세요.',
