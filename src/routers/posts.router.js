@@ -12,42 +12,48 @@ import { GROUP } from '../const/group.const.js';
 const router = express.Router();
 
 //게시물 작성
-router.post('/:group', authMiddleware, async (req, res, next) => {
-	try {
-		// 1. 필요한 정보 가져오기
-		// 1-1. request body로부터 postContent, postPicture, keywords 받아온다.
-		const { postContent, postPicture, keywords } = req.body;
-		// 1-2. group 가져오기
-		const { group } = req.params;
+router.post(
+  '/:group',
+  authMiddleware,
+  postValidator,
+  async (req, res, next) => {
+    try {
+      const { postContent, postPicture, keywords } = req.body;
+      const { group } = req.params;
+      const { UserId } = req.user;
 
-		// 2. 만약에 셋 중 하나라도 없으면 에러 처리
-		if (!postContent) {
-			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				status: HTTP_STATUS.BAD_REQUEST,
-				message: MESSAGES.POSTS.CREATE.NO_POSTCONTENT,
-			});
-		}
-		if (!keywords) {
-			return res.status(HTTP_STATUS.BAD_REQUEST).json({
-				status: HTTP_STATUS.BAD_REQUEST,
-				message: MESSAGES.POSTS.CREATE.NO_KEYWORDS,
-			});
-		}
+      //이미지가 유효한지 (jpg, png 등...)
+      if (postPicture) {
+        postPicture.forEach((i) => {
+          console.log('검사할것: ' + i);
+          const ext = i.replace(/(\w|-)+./, '');
+          if (!['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov'].includes(ext)) {
+            return res.status(HTTP_STATUS.BAD_REQUEST).json({
+              status: HTTP_STATUS.BAD_REQUEST,
+              message: MESSAGES.POSTS.CREATE.POST_PICTURE.INVALID_FORMAT,
+            });
+          }
+        });
+      }
 
-		// 3. 작성자 유저 ID를 req.user로 받아오고,
-		const { UserId } = req.user;
-		// 4. 작성한 내용을 바탕으로 posts 테이블에 생성
-		const post = await prisma.posts.create({
-			data: {
-				group,
-				UserId: +UserId,
-				postContent,
-				postPicture: postPicture ?? [],
-				keywords,
-			}
-		});
-		// 5. 생성 결과를 클라이언트에 반환
-		// 5-1. post_id, User_id, nickname, post_content, post_picture, keywords
+      //그룹 이름 검사
+      if (!Object.values(GROUP).includes(group)) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          status: HTTP_STATUS.NOT_FOUND,
+          message: MESSAGES.POSTS.CREATE.GROUP.INVALID,
+        });
+      }
+
+      //데이터 분리 없이 그대로 진행할 경우
+      const post = await prisma.posts.create({
+        data: {
+          group,
+          UserId: +UserId,
+          postContent,
+          postPicture: postPicture ?? [],
+          keywords: keywords ?? [],
+        },
+      });
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
@@ -61,6 +67,7 @@ router.post('/:group', authMiddleware, async (req, res, next) => {
     }
   }
 );
+
 
 // 내 게시물 목록 조회
 router.get('/me', authMiddleware, async (req, res, next) => {
