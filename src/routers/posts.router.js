@@ -165,10 +165,29 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
 
     // 2. 로그인한 사용자의 게시물을 조회한다.
     const detailPost = await prisma.posts.findUnique({
-      where: {
-        postId: +postId,
-      },
-    });
+		where: {
+			postId: +postId,
+		},
+		select: {
+			postId: true,
+			postContent: true,
+			postPicture: true,
+			keywords: true,
+			createdAt: true,
+			updatedAt: true,
+			User: {
+				select: {
+					UserInfos: {
+						select: {
+							nickname: true,
+							UserId: true
+						}
+					}
+				}
+			}
+		}
+	});
+
 
     // 3. 게시물 번호가 있는지 확인해서 없으면 오류 반환
     //
@@ -188,4 +207,47 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
     next(err);
   }
 });
+
+router.delete('/:postId', authMiddleware, async (req, res, next) => {
+  try {
+    //유저 아이디를 req.user에서 가져옴
+    const { UserId } = req.user;
+
+    //포스트 아이디를 req.params에서 가져옴
+    const { postId } = req.params;
+
+    //해당 게시물이 존재 하는지 검사 params에서 가져온 id = post에서 가져온 id 일치인지
+    const post = await prisma.posts.findFirst({
+      where: {
+        postId: +postId,
+      },
+    });
+    
+    if (!post) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: MESSAGES.POSTS.DELETE.NO_POSTID,
+      });
+    }
+    //로그인한 유저id와 게시물 작성한 유저id가 같은지 확인
+    // if (UserId !== post.userId) {
+    //   return res.status(HTTP_STATUS.ERROR).json({
+    //     message: MESSAGES.POSTS.DELETE.POST_ID_NOT_MATCHED,
+    //   });
+    // }
+	
+    await prisma.posts.delete({
+      where: { postId: +postId },
+    });
+
+    return res.status(HTTP_STATUS.OK).json({
+      status: HTTP_STATUS.OK,
+      message: MESSAGES.POSTS.DELETE.SUCCEED,
+      data: { postId: postId },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

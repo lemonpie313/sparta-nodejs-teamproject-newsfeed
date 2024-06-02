@@ -80,7 +80,9 @@ export const MESSAGES = {
       SUCCEED: '게시물 수정이 완료되었습니다.',
     },
     DELETE: {
-      // 화이팅
+      NO_POSTID: '해당 게시글이 존재하지 않습니다.',
+      POST_ID_NOT_MATCHED: '작성자가 다른 게시물입니다.',
+      SUCCEED: '삭제가 완료되었습니다.',
     },
   },
   COMMENTS: {
