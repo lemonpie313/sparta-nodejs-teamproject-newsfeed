@@ -82,6 +82,25 @@ export const MESSAGES = {
       // 화이팅
     },
   },
+  COMMENTS: {
+    CREATE: {
+      NO_COMMENTS: '댓글을 입력해 주세요.',
+      SUCCEED: '댓글 작성에 성공하였습니다.',
+    },
+    READ: {
+      // 화이팅
+    },
+    UPDATE: {
+      NO_COMMENTS: '댓글을 입력해 주세요.',
+      NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
+      SUCCEED: '댓글 수정에 성공하였습니다.',
+    },
+    DELETE: {
+      NO_COMMENTS: '댓글이 존재하지 않습니다.',
+      NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
+      SUCCEED: '댓글 삭제에 성공하였습니다.',
+    },
+  },
   JWT: {
     NONE: '인증 정보가 없습니다.',
     NOT_TYPE: '지원하지 않는 인증방식입니다.',
