@@ -13,7 +13,7 @@ const PORT = 3000; // 서버를 열 때 사용할 포트 번호
 app.use(express.json());
 
 app.get('/', (req, res) => {
-	res.send('루트!!');
+  res.send('루트!!');
 });
 
 app.use('/auth', [authRouter]);
@@ -24,5 +24,5 @@ app.use('/posts', [postsRouter]);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-	console.log(PORT, '포트로 서버가 열렸어요!');
+  console.log(PORT, '포트로 서버가 열렸어요!');
 });

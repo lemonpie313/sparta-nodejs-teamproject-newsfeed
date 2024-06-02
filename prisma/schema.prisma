@@ -51,21 +51,34 @@ model UserInfos {
 }
 
 model Posts {
-    postId      Int      @id @default(autoincrement()) @map("post_id")
-    UserId      Int      @map("user_id")
-    group       Group    @map("group")
-    postPicture Json     @map("post_picture")
-    postContent String   @map("self_introduction") @db.Text
-    keywords    Json     @map("keywords")
-    createdAt   DateTime @default(now()) @map("created_at")
-    updatedAt   DateTime @updatedAt @map("updated_at")
+    postId       Int      @id @default(autoincrement()) @map("post_id")
+    UserId       Int      @map("user_id")
+    group        Group    @map("group")
+    postContent  String   @map("self_introduction") @db.Text
+    postPicture  Json?    @map("post_pictures")
+    keywords     Json?    @map("keywords")
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
 
+    // PostPictures PostPictures[]
     PostLikes PostLikes?
     User      Users      @relation(fields: [UserId], references: [userId], onDelete: Cascade)
     Comments  Comments[]
 
     @@map("posts")
 }
+
+// model PostPictures {
+//     postPictureId Int      @id @default(autoincrement()) @map("post_picture_id")
+//     PostId        Int      @map("post_id")
+//     postPicture   String   @map("post_picture")
+//     createdAt     DateTime @default(now()) @map("created_at")
+//     updatedAt     DateTime @updatedAt @map("updated_at")
+
+//     Post Posts @relation(fields: [PostId], references: [postId], onDelete: Cascade)
+
+//     @@map("post_pictures")
+// }
 
 model Comments {
     commentId Int      @id @default(autoincrement()) @map("comment_id")
