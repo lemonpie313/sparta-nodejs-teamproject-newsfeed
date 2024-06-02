@@ -10,10 +10,12 @@ const router = express.Router();
 
 router.get('/', authMiddleware, async (req, res, next) => {
   try {
-    const { userId } = req.user;
+    
+    const { UserId } = req.user;
+    console.log(UserId);
     const user = await prisma.Users.findFirst({
       where: {
-        userId,
+        userId: UserId,
       },
       select: {
         userId: true,

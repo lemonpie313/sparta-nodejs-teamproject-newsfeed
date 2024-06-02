@@ -30,7 +30,6 @@ export default async function (req, res, next) {
       process.env.ACCESS_TOKEN_SECRET_KEY
     );
     const userId = decodedToken.id;
-
     const user = await prisma.userInfos.findFirst({
       where: { UserId: +userId },
       select: {
