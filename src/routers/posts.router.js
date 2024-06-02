@@ -274,8 +274,6 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
     const { postId } = req.params;
     const { UserId } = req.user;
 
-    console.log(UserId);
-
     //게시물 찾기
     const post = await prisma.posts.findFirst({
       where: {
@@ -284,6 +282,7 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
       select: {
         postId: true,
         postContent: true,
+        keywords: true,
         PostLikes: {
           select: {
             postLikesId: true,
@@ -307,21 +306,38 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
       },
       select: {
         UserId: true,
+        prefer: true,
         likePosts: true,
       },
     });
 
     //좋아요 수 수정 / userInfo 내용 수정
+    const keywords = post.keywords;
     let updatedLikes = post.PostLikes.postLikes;
     let userLikes = userInfo.likePosts;
+    let userPrefer = userInfo.prefer;
     if (userInfo.likePosts.includes(post.postId)) {
       updatedLikes -= 1;
       userLikes = userLikes.filter((cur) => {
         cur != post.postId; //근데 삭제는 배열이 길면 오래걸릴텐데.......
+        keywords.forEach((key) => {
+          if (userPrefer[`${key}`] != 1) {
+            userPrefer[`${key}`] -= 1;
+          } else {
+            //삭제
+          }
+        });
       });
     } else {
       updatedLikes += 1;
       userLikes.push(+postId);
+      keywords.forEach((key) => {
+        if (Object.keys(userPrefer).includes(`${key}`)) {
+          userPrefer[`${key}`] += 1;
+        } else {
+          userPrefer[`${key}`] = 1;
+        }
+      });
     }
 
     // 문제점
@@ -335,13 +351,14 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
         postLikes: updatedLikes,
       },
       where: {
-        PostId: +postId,
+        PostId: post.postId,
       },
     });
 
     //userInfo 반영
     const userInfoUpdate = await prisma.userInfos.update({
       data: {
+        prefer: userPrefer,
         likePosts: userLikes,
       },
       where: {

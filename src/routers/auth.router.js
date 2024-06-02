@@ -57,7 +57,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
             nickname,
             selfIntroduction,
             profilePicture: profilePicture ?? 'image.jpg',
-            prefer: [],
+            prefer: {},
             likePosts: [],
             likeComments: [],
           },
