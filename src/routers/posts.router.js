@@ -296,32 +296,55 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
     }
 
     //내정보 > 좋아요 여부
-    const userInfo = prisma.userInfos.findFirst({
+    const userInfo = await prisma.userInfos.findFirst({
       where: {
-        UserId: +UserId,
+        UserId,
+      },
+      select: {
+        UserId: true,
+        likePosts: true,
       },
     });
+
+    //좋아요 수 수정 / userInfo 내용 수정
+    let updatedLikes = postLikes.postLikes;
+    let userLikes = userInfo.likePosts;
+
+    if (userInfo.likePosts.includes(+postId)) {
+      updatedLikes -= 1;
+      //근데 삭제는 배열이 길면 오래걸릴텐데.......
+      userLikes = userLikes.filter((cur) => {
+        cur != +postId;
+      });
+    } else {
+      updatedLikes += 1;
+      userLikes.push(+postId);
+    }
 
     //좋아요 반영
     const postLikesUpdated = await prisma.postLikes.update({
       data: {
-        postLikes: postLikes.postLikes + 1,
+        postLikes: updatedLikes,
       },
       where: {
         PostId: +postId,
       },
     });
 
-    // const userInfoUpdate = prisma.userInfos.update({
-    //   data: {
-
-    //   }
-    // })
+    //userInfo 반영
+    const userInfoUpdate = await prisma.userInfos.update({
+      data: {
+        likePosts: userLikes,
+      },
+      where: {
+        UserId,
+      },
+    });
 
     res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.LIKES.SUCCEED,
-      data: { postLikesUpdated, userInfo },
+      data: { postLikesUpdated },
     });
   } catch (err) {
     next(err);
