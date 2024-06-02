@@ -277,18 +277,23 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
     console.log(UserId);
 
     //게시물 찾기
-    const postLikes = await prisma.postLikes.findFirst({
+    const post = await prisma.posts.findFirst({
       where: {
-        PostId: +postId,
+        postId: +postId,
       },
       select: {
-        PostId: true,
-        postLikesId: true,
-        postLikes: true,
+        postId: true,
+        postContent: true,
+        PostLikes: {
+          select: {
+            postLikesId: true,
+            postLikes: true,
+          },
+        },
       },
     });
 
-    if (!postLikes) {
+    if (!post) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         status: HTTP_STATUS.NOT_FOUND,
         message: MESSAGES.POSTS.LIKES.IS_NOT_EXIST,
@@ -307,19 +312,22 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
     });
 
     //좋아요 수 수정 / userInfo 내용 수정
-    let updatedLikes = postLikes.postLikes;
+    let updatedLikes = post.PostLikes.postLikes;
     let userLikes = userInfo.likePosts;
-
-    if (userInfo.likePosts.includes(+postId)) {
+    if (userInfo.likePosts.includes(post.postId)) {
       updatedLikes -= 1;
-      //근데 삭제는 배열이 길면 오래걸릴텐데.......
       userLikes = userLikes.filter((cur) => {
-        cur != +postId;
+        cur != post.postId; //근데 삭제는 배열이 길면 오래걸릴텐데.......
       });
     } else {
       updatedLikes += 1;
       userLikes.push(+postId);
     }
+
+    // 문제점
+    // : prefer에 좋아요 누른 글의 키워드를 개수로 저장해야함
+    // -> 배열이 아니라 따로 db를 파야됨.. 객체로 저장하면 수정이 빡셈
+    // +) 아니다 할수는 있겠다... 근데 이것도 데이터 쌓이면 처리가 오래걸릴지도
 
     //좋아요 반영
     const postLikesUpdated = await prisma.postLikes.update({
