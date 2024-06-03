@@ -12,9 +12,7 @@ const postSchema = Joi.object({
 const postEditSchema = Joi.object({
   postContent: Joi.string().min(1),
   postPicture: Joi.array(),
-  keywords: Joi.string().min(0).max(10).messages({
-    'string.min': MESSAGES.POSTS.CREATE.KEYWORDS.MAX_LENGTH,
-  }),
+  keywords: Joi.array(),
 });
 
 const postValidator = async (req, res, next) => {
