@@ -84,6 +84,10 @@ export const MESSAGES = {
       POST_ID_NOT_MATCHED: '작성자가 다른 게시물입니다.',
       SUCCEED: '삭제가 완료되었습니다.',
     },
+    LIKES: {
+      IS_NOT_EXIST: '해당 게시글이 존재하지 않습니다',
+      SUCCEED: '좋아요가 반영되었습니다.',
+    },
   },
   COMMENTS: {
     CREATE: {
@@ -91,7 +95,7 @@ export const MESSAGES = {
       SUCCEED: '댓글 작성에 성공하였습니다.',
     },
     READ: {
-      // 화이팅
+      SUCCEED: '댓글 조회에 성공하였습니다.',
     },
     UPDATE: {
       NO_COMMENTS: '댓글을 입력해 주세요.',

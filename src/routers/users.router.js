@@ -24,6 +24,9 @@ router.get('/', authMiddleware, async (req, res, next) => {
             nickname: true,
             selfIntroduction: true,
             profilePicture: true,
+            prefer: true,
+            likePosts: true,
+            likeComments: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -48,7 +51,7 @@ router.patch(
   userInfoUpdateValidator,
   async (req, res, next) => {
     try {
-      const { UserId, role } = req.user;
+      const { UserId } = req.user;
       const { name, nickname, selfIntroduction, profilePicture, password } =
         req.body;
 
