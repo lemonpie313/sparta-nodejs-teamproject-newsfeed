@@ -111,6 +111,8 @@ export const MESSAGES = {
     LIKE: {
       LIKE: '좋아요가 반영되었습니다.',
       LIKE_CANCEL: '좋아요 취소가 반영되었습니다.',
+      NO_POST: '해당 게시글이 존재하지 않습니다.',
+      NO_COMMENTS: '해당 댓글이 존재하지 않습니다.',
     },
   },
   JWT: {
