@@ -8,6 +8,7 @@ import {
   postEditValidator,
 } from '../middlewares/joi/posts.joi.middleware.js';
 import { GROUP } from '../const/group.const.js';
+import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
@@ -44,16 +45,34 @@ router.post(
         });
       }
 
-      //데이터 분리 없이 그대로 진행할 경우
-      const post = await prisma.posts.create({
-        data: {
-          group,
-          UserId: +UserId,
-          postContent,
-          postPicture: postPicture ?? [],
-          keywords: keywords ?? [],
+      const post = await prisma.$transaction(
+        async (tx) => {
+          const post = await tx.posts.create({
+            data: {
+              group,
+              UserId: +UserId,
+              postContent,
+              postPicture: postPicture ?? [],
+              keywords: keywords ?? [],
+            },
+          });
+
+          const postLikes = await tx.postLikes.create({
+            data: {
+              PostId: post.postId,
+              postLikes: 0,
+            },
+            select: {
+              postLikesId: true,
+              postLikes: true,
+            },
+          });
+          return { ...post, ...postLikes };
         },
-      });
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        }
+      );
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
@@ -244,6 +263,117 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.DELETE.SUCCEED,
       data: { postId: postId },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* 게시물 좋아요 */
+//userInfo의 likePosts에 이미 해당 게시물이 있다
+// -> 좋아요 취소, likePosts에서 postId 삭제, prefer 키워드 카운트 다운
+// 해당 게시물이 없다
+// -> 좋아요 반영, likePosts에 postId 추가, prefer 키워드 카운트 업
+router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
+  try {
+    const { postId } = req.params;
+    const { UserId } = req.user;
+
+    //게시물 찾기
+    const post = await prisma.posts.findFirst({
+      where: {
+        postId: +postId,
+      },
+      select: {
+        postId: true,
+        postContent: true,
+        keywords: true,
+        PostLikes: {
+          select: {
+            postLikesId: true,
+            postLikes: true,
+          },
+        },
+      },
+    });
+
+    if (!post) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: MESSAGES.POSTS.LIKES.IS_NOT_EXIST,
+      });
+    }
+
+    //내정보 > 좋아요 여부
+    const userInfo = await prisma.userInfos.findFirst({
+      where: {
+        UserId,
+      },
+      select: {
+        UserId: true,
+        prefer: true,
+        likePosts: true,
+      },
+    });
+
+    //좋아요 수 수정 / userInfo 내용 수정
+    //근데 좋아요 취소할때 userInfo에서 prefer, likePosts 삭제는 데이터가 길면 오래걸릴텐데.......
+    const keywords = post.keywords;
+    let updatedLikes = post.PostLikes.postLikes;
+    let userLikes = userInfo.likePosts;
+    let userPrefer = userInfo.prefer;
+    if (userInfo.likePosts.includes(post.postId)) {
+      updatedLikes -= 1;
+      userLikes = userLikes.filter((cur) => {
+        cur != post.postId;
+      });
+      keywords.forEach((key) => {
+        if (userPrefer[`${key}`] <= 1) {
+          delete userPrefer[`${key}`];
+        } else {
+          userPrefer[`${key}`] -= 1;
+        }
+      });
+    } else {
+      updatedLikes += 1;
+      userLikes.push(+postId);
+      keywords.forEach((key) => {
+        if (
+          !Object.keys(userPrefer).includes(`${key}`) ||
+          userPrefer[key] == 0
+        ) {
+          userPrefer[key] = 1;
+        } else {
+          userPrefer[key] += 1;
+        }
+      });
+    }
+
+    //좋아요 반영
+    const postLikesUpdated = await prisma.postLikes.update({
+      data: {
+        postLikes: updatedLikes,
+      },
+      where: {
+        PostId: post.postId,
+      },
+    });
+
+    //userInfo 반영
+    const userInfoUpdate = await prisma.userInfos.update({
+      data: {
+        prefer: userPrefer,
+        likePosts: userLikes,
+      },
+      where: {
+        UserId,
+      },
+    });
+
+    res.status(HTTP_STATUS.OK).json({
+      status: HTTP_STATUS.OK,
+      message: MESSAGES.POSTS.LIKES.SUCCEED,
+      data: { postLikesUpdated },
     });
   } catch (err) {
     next(err);
