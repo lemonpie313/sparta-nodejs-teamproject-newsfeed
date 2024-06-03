@@ -8,6 +8,7 @@ import {
   postEditValidator,
 } from '../middlewares/joi/posts.joi.middleware.js';
 import { GROUP } from '../const/group.const.js';
+import { ROLE } from '../const/role.const.js';
 import { Prisma } from '@prisma/client';
 
 const router = express.Router();
@@ -212,50 +213,63 @@ router.patch(
 // 게시물 상세 조회
 router.get('/:postId', authMiddleware, async (req, res, next) => {
   try {
-    // 1. postId 받아오기
-    const { postId } = req.params;
-
-    // 2. 로그인한 사용자의 게시물을 조회한다.
-    const detailPost = await prisma.posts.findUnique({
-      where: {
-        postId: +postId,
-      },
-      select: {
-        postId: true,
-        postContent: true,
-        postPicture: true,
-        keywords: true,
-        createdAt: true,
-        updatedAt: true,
-        User: {
-          select: {
-            UserInfos: {
-              select: {
-                nickname: true,
-                UserId: true,
-              },
-            },
+      // 1. postId 받아오기
+      const { postId } = req.params;
+      // 2. 로그인한 사용자의 게시물을 조회한다.
+      const detailPost = await prisma.posts.findUnique({
+          where: {
+              postId: +postId,
           },
-        },
-      },
-    });
-
-    // 3. 게시물 번호가 있는지 확인해서 없으면 오류 반환
-    //
-    if (detailPost === null) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        status: HTTP_STATUS.NOT_FOUND,
-        message: MESSAGES.POSTS.READ.IS_NOT_EXIST,
+          select: {
+              postId: true,
+              postContent: true,
+              createdAt: true,
+              updatedAt: true,
+              PostPictures: {
+                  select: {
+                      picture: true,
+                      createdAt: true,
+                      updatedAt: true
+                  }
+              },
+              Comments: {
+                  select: {
+                      comment: true
+                  }
+              },
+              User: {
+                  select: {
+                      UserInfos: {
+                          select: {
+                              nickname: true,
+                              UserId: true,
+                          },
+                      },
+                  },
+              },
+              LikePosts: {
+                  select: {
+                      likePostId: true
+                  }
+              }
+          },
       });
-    }
-    // 4.
-    return res.status(HTTP_STATUS.OK).json({
-      status: HTTP_STATUS.OK,
-      message: MESSAGES.POSTS.READ.SUCCEED,
-      data: detailPost,
-    });
+      // 3. 게시물 번호가 있는지 확인해서 없으면 오류 반환
+      //
+      if (detailPost === null) {
+          return res.status(HTTP_STATUS.NOT_FOUND).json({
+              status: HTTP_STATUS.NOT_FOUND,
+              message: MESSAGES.POSTS.READ.IS_NOT_EXIST,
+          });
+      }
+      // 4.
+      return res.status(HTTP_STATUS.OK).json({
+          status: HTTP_STATUS.OK,
+          message: MESSAGES.POSTS.READ.SUCCEED,
+          data: detailPost,
+      });
   } catch (err) {
-    next(err);
+      next(err);
   }
 });
 
@@ -374,60 +388,64 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
   }
 });
 
-// 팬 게시물 최신순 조회
+// 팬 게시물 최신순 조회 -- 리팩토링 완료
 router.get('/recent/:group', authMiddleware, async (req, res, next) => {
   try {
-    // 1. 어떤 그룹인지 값 가져오기
-    const { group } = req.params;
-
-    // 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
-    const post = await prisma.posts.findMany({
-      where: {
-        group,
-        User: {
-          UserInfos: {
-            role: 'FAN',
+      // 1. 어떤 그룹인지 값 가져오기
+      const { group } = req.params;
+      // 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
+      const post = await prisma.posts.findMany({
+          where: {
+              group,
+              User: {
+                  UserInfos: {
+                      role: ROLE.FAN
+                  }
+              }
           },
-        },
-      },
-      select: {
-        postId: true,
-        group: true,
-        postContent: true,
-        postPicture: true,
-        keywords: true,
-        createdAt: true,
-        updatedAt: true,
-        UserId: false,
-        User: {
           select: {
-            UserInfos: {
-              select: {
-                nickname: true,
+              postId: true,
+              PostPictures: {
+                  select: {
+                      picture: true,
+                      createdAt: true,
+                      updatedAt: true,
+                  }
               },
-            },
+              group: true,
+              postContent: true,
+              createdAt: true,
+              updatedAt: true,
+              UserId: false,
+              User: {
+                  select: {
+                      UserInfos: {
+                          select: {
+                              nickname: true
+                          }
+                      }
+                  }
+              }
           },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-    // 3. 조건에 맞는 게시물이 없을 경우에대한 오류 처리 반환
-    if (!post) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        status: HTTP_STATUS.NOT_FOUND,
-        message: MESSAGES.POSTS.READ.IS_NOT_EXIST,
+          orderBy: {
+              createdAt: 'desc'
+          },
       });
-    }
-    // 4. 조건에 맞는 게시물이 있을 경우에대한 성공 처리 반환
-    return res.status(HTTP_STATUS.OK).json({
-      status: HTTP_STATUS.OK,
-      message: MESSAGES.POSTS.READ.SUCCEED,
-      data: post,
-    });
+      // 3. 조건에 맞는 게시물이 없을 경우에대한 오류 처리 반환
+      if (!post) {
+          return res.status(HTTP_STATUS.NOT_FOUND).json({
+              status: HTTP_STATUS.NOT_FOUND,
+              message: MESSAGES.POSTS.READ.IS_NOT_EXIST
+          });
+      }
+      // 4. 조건에 맞는 게시물이 있을 경우에대한 성공 처리 반환
+      return res.status(HTTP_STATUS.OK).json({
+          status: HTTP_STATUS.OK,
+          message: MESSAGES.POSTS.READ.SUCCEED,
+          data: post
+      });
   } catch (err) {
-    next(err);
+      next(err);
   }
 });
 
