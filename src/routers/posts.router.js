@@ -12,7 +12,7 @@ import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
-//게시물 작성
+//게시물 작성 -- 리팩토링 완료
 router.post(
   '/:group',
   authMiddleware,
@@ -113,7 +113,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
   }
 });
 
-// 게시물 수정
+// 게시물 수정 -- 리팩토링 완료
 router.patch(
   '/:postId',
   authMiddleware,
@@ -150,7 +150,6 @@ router.patch(
           message: MESSAGES.POSTS.UPDATE.IS_NOT_EXIST,
         });
       }
-
       //여기서부터
       const myPost = await prisma.$transaction(async (tx) => {
         const post = await tx.posts.update({
@@ -161,26 +160,40 @@ router.patch(
             UserId,
             postId: +postId,
           },
+          // select: {
+          //   PostPictures: {
+          //     select: {
+          //       postPictureId: true,
+          //     }
+          //   }
+          // }
         });
-
-        const deletedPicture = await tx.postPictures.delete({
-          where: {
-            PostId: +postId,
-          },
-        });
-        const picture = postPicture.reduce(async (arr, pic) => {
-          const updatedPicture = await tx.postPictures.create({
-            data: {
+        let pictures = [];
+        if (postPicture != undefined) {
+          
+          const deletedPicture = await tx.postPictures.deleteMany({
+            where: {
               PostId: +postId,
-              picture: pic,
-            },
-            select: {
-              picture: true,
             },
           });
-          return [...arr, ...updatedPicture];
-        }, []);
-        return { ...post, ...picture };
+          for (let i = 0; i < postPicture.length; i++) {
+            const picture = await tx.postPictures.create({
+              data: {
+                PostId: post.postId,
+                picture: postPicture[i],
+              },
+            });
+            pictures.push(picture);
+          }
+        } else {
+          pictures = await tx.postPictures.findMany({
+            where: {
+              PostId: +postId,
+            },
+          })
+        }
+        
+        return { ...post, pictures };
       });
       //여기까지
 
