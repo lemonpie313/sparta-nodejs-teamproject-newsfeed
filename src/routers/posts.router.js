@@ -45,16 +45,7 @@ router.post(
 				});
 			}
 
-			//데이터 분리 없이 그대로 진행할 경우
-			const post = await prisma.posts.create({
-				data: {
-					group,
-					UserId: +UserId,
-					postContent,
-					postPicture: postPicture ?? [],
-					keywords: keywords ?? [],
-				},
-			});
+
 			const post = await prisma.$transaction(
 				async (tx) => {
 					const post = await tx.posts.create({
@@ -385,6 +376,124 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
 			message: MESSAGES.POSTS.LIKES.SUCCEED,
 			data: { postLikesUpdated },
 		});
+	} catch (err) {
+		next(err);
+	}
+});
+
+// 팬 게시물 최신순 조회
+router.get('/recent/:group', authMiddleware, async (req, res, next) => {
+	try {
+		// 1. 어떤 그룹인지 값 가져오기
+		const { group } = req.params;
+
+		// 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
+		const post = await prisma.posts.findMany({
+			where: {
+				group,
+				User: {
+					UserInfos: {
+						role: 'FAN'
+					}
+				}
+			},
+			select: {
+				postId: true,
+				group: true,
+				postContent: true,
+				postPicture: true,
+				keywords: true,
+				createdAt: true,
+				updatedAt: true,
+				UserId: false,
+				User: {
+					select: {
+						UserInfos: {
+							select: {
+								nickname: true
+							}
+						}
+					}
+				}
+			},
+			orderBy: {
+				createdAt: 'desc'
+			},
+		});
+		// 3. 조건에 맞는 게시물이 없을 경우에대한 오류 처리 반환
+		if (!post) {
+			return res.status(HTTP_STATUS.NOT_FOUND).json({
+				status: HTTP_STATUS.NOT_FOUND,
+				message: MESSAGES.POSTS.READ.IS_NOT_EXIST
+			});
+		}
+		// 4. 조건에 맞는 게시물이 있을 경우에대한 성공 처리 반환
+		return res.status(HTTP_STATUS.OK).json({
+			status: HTTP_STATUS.OK,
+			message: MESSAGES.POSTS.READ.SUCCEED,
+			data: post
+		});
+
+	} catch (err) {
+		next(err);
+	}
+});
+
+// 아티스트 게시물 최신순 조회
+router.get('/artists/:group', authMiddleware, async (req, res, next) => {
+	try {
+		// 1. 어떤 그룹인지 값 가져오기
+		const { group } = req.params;
+
+		// 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
+		const post = await prisma.posts.findMany({
+			where: {
+				group,
+				User: {
+					UserInfos: {
+						role: 'ARTIST'
+					}
+				}
+			},
+			select: {
+				postId: true,
+				group: true,
+				postContent: true,
+				postPicture: true,
+				keywords: true,
+				createdAt: true,
+				updatedAt: true,
+				UserId: false,
+				User: {
+					select: {
+						UserInfos: {
+							select: {
+								nickname: true,
+								role: true,
+							}
+						}
+					}
+				}
+			},
+			orderBy: {
+				createdAt: 'desc'
+			},
+		});
+		// 3. 조건에 맞는 게시물이 없을 경우에대한 오류 처리 반환
+		if (!post) {
+			return res.status(HTTP_STATUS.NOT_FOUND).json({
+				status: HTTP_STATUS.NOT_FOUND,
+				message: MESSAGES.POSTS.READ.IS_NOT_EXIST
+			});
+		}
+
+		// 4. 조건에 맞는 게시물이 있을 경우에대한 성공 처리 반환
+		return res.status(HTTP_STATUS.OK).json({
+			status: HTTP_STATUS.OK,
+			message: MESSAGES.POSTS.READ.SUCCEED,
+			data: post
+		});
+
 	} catch (err) {
 		next(err);
 	}
