@@ -309,12 +309,6 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
         postId: true,
         postContent: true,
         keywords: true,
-        PostLikes: {
-          select: {
-            postLikesId: true,
-            postLikes: true,
-          },
-        },
       },
     });
 
@@ -325,76 +319,49 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
       });
     }
 
-    //내정보 > 좋아요 여부
-    const userInfo = await prisma.userInfos.findFirst({
+    //좋아요 개수
+    const like = await prisma.likePosts.findMany({
+      where: {
+        PostId: +postId,
+      },
+    });
+    const likes = like.length;
+
+    //사용자가 좋아요를 이미 눌렀는지 여부
+    const myInfo = await prisma.userInfos.findFirst({
       where: {
         UserId,
       },
       select: {
-        UserId: true,
-        prefer: true,
-        likePosts: true,
+        userInfoId: true,
       },
     });
+    const likedIt = like.find((cur) => cur.UserInfoId == myInfo.userInfoId);
 
-    //좋아요 수 수정 / userInfo 내용 수정
-    //근데 좋아요 취소할때 userInfo에서 prefer, likePosts 삭제는 데이터가 길면 오래걸릴텐데.......
-    const keywords = post.keywords;
-    let updatedLikes = post.PostLikes.postLikes;
-    let userLikes = userInfo.likePosts;
-    let userPrefer = userInfo.prefer;
-    if (userInfo.likePosts.includes(post.postId)) {
-      updatedLikes -= 1;
-      userLikes = userLikes.filter((cur) => {
-        cur != post.postId;
+    if (likedIt) {
+      await prisma.delete({
+        where: {
+          UserId,
+          PostId: +postId,
+        },
       });
-      keywords.forEach((key) => {
-        if (userPrefer[`${key}`] <= 1) {
-          delete userPrefer[`${key}`];
-        } else {
-          userPrefer[`${key}`] -= 1;
-        }
-      });
+      likes -= 1;
     } else {
-      updatedLikes += 1;
-      userLikes.push(+postId);
-      keywords.forEach((key) => {
-        if (
-          !Object.keys(userPrefer).includes(`${key}`) ||
-          userPrefer[key] == 0
-        ) {
-          userPrefer[key] = 1;
-        } else {
-          userPrefer[key] += 1;
-        }
+      await prisma.create({
+        data: {
+          UserInfoId: myInfo.userInfoId,
+          PostId: +postId,
+        },
       });
+      likes += 1;
     }
-
-    //좋아요 반영
-    const postLikesUpdated = await prisma.postLikes.update({
-      data: {
-        postLikes: updatedLikes,
-      },
-      where: {
-        PostId: post.postId,
-      },
-    });
-
-    //userInfo 반영
-    const userInfoUpdate = await prisma.userInfos.update({
-      data: {
-        prefer: userPrefer,
-        likePosts: userLikes,
-      },
-      where: {
-        UserId,
-      },
-    });
 
     res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.LIKES.SUCCEED,
-      data: { postLikesUpdated },
+      data: {
+        post: [...post, ...{ likes }],
+      },
     });
   } catch (err) {
     next(err);
