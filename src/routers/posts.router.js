@@ -170,7 +170,6 @@ router.patch(
         });
         let pictures = [];
         if (postPicture != undefined) {
-          
           const deletedPicture = await tx.postPictures.deleteMany({
             where: {
               PostId: +postId,
@@ -190,9 +189,9 @@ router.patch(
             where: {
               PostId: +postId,
             },
-          })
+          });
         }
-        
+
         return { ...post, pictures };
       });
       //여기까지
@@ -303,11 +302,7 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
   }
 });
 
-/* 게시물 좋아요 */
-//userInfo의 likePosts에 이미 해당 게시물이 있다
-// -> 좋아요 취소, likePosts에서 postId 삭제, prefer 키워드 카운트 다운
-// 해당 게시물이 없다
-// -> 좋아요 반영, likePosts에 postId 추가, prefer 키워드 카운트 업
+// 게시물 좋아요 - 리팩토링 완료
 router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
   try {
     const { postId } = req.params;
@@ -321,7 +316,6 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
       select: {
         postId: true,
         postContent: true,
-        keywords: true,
       },
     });
 
@@ -332,15 +326,15 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
       });
     }
 
-    //좋아요 개수
+    //좋아요 목록, 좋아요 개수
     const like = await prisma.likePosts.findMany({
       where: {
         PostId: +postId,
       },
     });
-    const likes = like.length;
+    let likes = like.length;
 
-    //사용자가 좋아요를 이미 눌렀는지 여부
+    //사용자가 누른 좋아요 데이터
     const myInfo = await prisma.userInfos.findFirst({
       where: {
         UserId,
@@ -352,15 +346,14 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
     const likedIt = like.find((cur) => cur.UserInfoId == myInfo.userInfoId);
 
     if (likedIt) {
-      await prisma.delete({
+      await prisma.likePosts.delete({
         where: {
-          UserId,
-          PostId: +postId,
+          likePostId: likedIt.likePostId,
         },
       });
       likes -= 1;
     } else {
-      await prisma.create({
+      await prisma.likePosts.create({
         data: {
           UserInfoId: myInfo.userInfoId,
           PostId: +postId,
@@ -373,7 +366,7 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.LIKES.SUCCEED,
       data: {
-        post: [...post, ...{ likes }],
+        post: { ...post, likes },
       },
     });
   } catch (err) {
