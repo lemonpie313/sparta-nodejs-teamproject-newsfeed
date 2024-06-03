@@ -9,6 +9,7 @@ import { HTTP_STATUS } from '../const/http-status.const.js';
 import bycrpt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import { ROLE } from '../const/role.const.js';
 
 const router = express.Router();
 
@@ -55,6 +56,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
             UserId: user.userId,
             name,
             nickname,
+            role: ROLE.FAN,
             selfIntroduction,
             profilePicture: profilePicture ?? 'image.jpg',
             prefer: {},

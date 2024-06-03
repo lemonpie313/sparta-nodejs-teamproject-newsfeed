@@ -24,13 +24,20 @@ router.post('/:postId', authMiddleware, async (req, res, next) => {
         message: MESSAGES.COMMENTS.CREATE.NO_COMMENTS,
       });
     }
-    // 3. 작성한 내용을 바탕으로 comments 테이블에 comment 생성
+    // 3. comments 테이블과 comment_likes 테이블에 데이터 생성
+    // 3-1. 작성한 내용을 바탕으로 comments 테이블에 comment 생성
     const newComment = await prisma.comments.create({
       //comment는 위에서 선언해서.. newComment로 선언함
       data: {
         PostId: +postId,
         UserId: +UserId,
         comment,
+      },
+    });
+    // 3-2. 해당 comment와 1:1 관계를 가지는 comment_likes 생성
+    const newCommentLike = await prisma.CommentLikes.create({
+      data: {
+        CommentId: newComment.commentId,
       },
     });
     // 4. 댓글 작성 결과를 클라이언트에 반환
@@ -179,6 +186,108 @@ router.get('/me', authMiddleware, async (req, res, next) => {
       message: MESSAGES.COMMENTS.READ.SUCCEED,
       data: comments,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** 댓글 좋아요 API **/
+router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
+  try {
+    // 1. 필요한 정보들 가져오기
+    // 1-1. 좋아요를 누른 사람이 누구인가? req.user에서 가져와!
+    const { UserId } = req.user;
+    // 1-2. 그리고 이 댓글의 id가 무엇인가? req.params에서 가져와!
+    const { commentId } = req.params;
+    // 1-3. 이따 좋아요 수 반영을 위해 지금 좋아요 수 가져와!
+    // 1-3-1. 만약 commentLike 테이블에
+    const { commentLikes: currentLikes } = await prisma.CommentLikes.findFirst({
+      where: {
+        CommentId: +commentId,
+      },
+    });
+    // 1-4. 이 댓글이 어느 글에 달려있는 것인지 Post_id도 가져와!
+    const { PostId } = await prisma.comments.findFirst({
+      where: {
+        commentId: +commentId,
+      },
+    });
+
+    // 2. 내가 좋아요 누른 댓글(like_comments) 배열에
+    let { likeComments } = await prisma.UserInfos.findFirst({
+      where: {
+        UserId: +UserId,
+      },
+    });
+    // 2.@ '이 댓글의 comment_id' 가 요소로 있는지 확인
+    if (likeComments.includes(+commentId)) {
+      // <2-A 만약 있다면> '좋아요 취소' 하는 로직 실행
+      // 2-A1. like_comments 배열에서 'comment_id' 요소 삭제
+      for (let i = 0; i < likeComments.length; i++) {
+        if (likeComments[i] == +commentId) {
+          likeComments.splice(i, 1);
+          await prisma.UserInfos.update({
+            data: {
+              likeComments,
+            },
+            where: {
+              UserId: +UserId,
+            },
+          });
+          break;
+        }
+      }
+      // 2-A2. comment_likes -= 1
+      const likeMinus = await prisma.commentLikes.update({
+        data: {
+          commentLikes: +currentLikes - 1,
+        },
+        where: {
+          CommentId: +commentId,
+        },
+      });
+      // 2-A3. 클라이언트에게 '좋아요 취소' 결과 반환
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        message: MESSAGES.COMMENTS.LIKE.LIKE_CANCEL,
+        data: {
+          PostId: +PostId,
+          CommentId: +commentId,
+          likes: likeMinus.commentLikes,
+        },
+      });
+    } else {
+      // <2-B 만약 없다면> '좋아요 추가' 하는 로직 실행
+      // 2-B1. like_comments 배열에서 'comment_id' 요소 추가
+      likeComments.push(+commentId);
+      await prisma.UserInfos.update({
+        data: {
+          likeComments,
+        },
+        where: {
+          UserId: +UserId,
+        },
+      });
+      // 2-B2. comment_likes += 1
+      const likePlus = await prisma.commentLikes.update({
+        data: {
+          commentLikes: +currentLikes + 1,
+        },
+        where: {
+          CommentId: +commentId,
+        },
+      });
+      // 2-B3. 클라이언트에게 '좋아요' 결과 반환
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        message: MESSAGES.COMMENTS.LIKE.LIKE,
+        data: {
+          PostId: +PostId,
+          CommentId: +commentId,
+          likes: likePlus.commentLikes,
+        },
+      });
+    }
   } catch (err) {
     next(err);
   }

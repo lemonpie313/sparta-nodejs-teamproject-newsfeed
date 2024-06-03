@@ -1,5 +1,6 @@
 export const GROUP = {
-  IVE: 'IVE',
-  CRAVITY: 'CRAVITY',
   MONSTAX: 'MONSTAX',
+  WJSN: 'WJSN',
+  CRAVITY: 'CRAVITY',
+  IVE: 'IVE',
 };
