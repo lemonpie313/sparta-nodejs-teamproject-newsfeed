@@ -219,10 +219,6 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
         UserId: +UserId,
       },
     });
-    console.log('로그인한 놈 id : ', UserId, typeof UserId);
-    console.log('선택된 댓글 id : ', commentId, typeof commentId);
-    console.log('현재 좋아요 수 : ', currentLikes, typeof currentLikes);
-    console.log('놈이 좋아요 누른 댓글 목록 : ', likeComments);
     // 2.@ '이 댓글의 comment_id' 가 요소로 있는지 확인
     if (likeComments.includes(+commentId)) {
       // <2-A 만약 있다면> '좋아요 취소' 하는 로직 실행
@@ -230,6 +226,14 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
       for (let i = 0; i < likeComments.length; i++) {
         if (likeComments[i] == +commentId) {
           likeComments.splice(i, 1);
+          await prisma.UserInfos.update({
+            data: {
+              likeComments,
+            },
+            where: {
+              UserId: +UserId,
+            },
+          });
           break;
         }
       }
@@ -239,7 +243,7 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
           commentLikes: +currentLikes - 1,
         },
         where: {
-          commentId: +commentId,
+          CommentId: +commentId,
         },
       });
       // 2-A3. 클라이언트에게 '좋아요 취소' 결과 반환
@@ -248,21 +252,29 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
         message: MESSAGES.COMMENTS.LIKE.LIKE_CANCEL,
         data: {
           PostId: +PostId,
-          commentId: +commentId,
+          CommentId: +commentId,
           likes: likeMinus.commentLikes,
         },
       });
     } else {
       // <2-B 만약 없다면> '좋아요 추가' 하는 로직 실행
       // 2-B1. like_comments 배열에서 'comment_id' 요소 추가
-      likecomments.push(+commentId);
+      likeComments.push(+commentId);
+      await prisma.UserInfos.update({
+        data: {
+          likeComments,
+        },
+        where: {
+          UserId: +UserId,
+        },
+      });
       // 2-B2. comment_likes += 1
       const likePlus = await prisma.commentLikes.update({
         data: {
           commentLikes: +currentLikes + 1,
         },
         where: {
-          commentId: +commentId,
+          CommentId: +commentId,
         },
       });
       // 2-B3. 클라이언트에게 '좋아요' 결과 반환
@@ -271,7 +283,7 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
         message: MESSAGES.COMMENTS.LIKE.LIKE,
         data: {
           PostId: +PostId,
-          commentId: +commentId,
+          CommentId: +commentId,
           likes: likePlus.commentLikes,
         },
       });
