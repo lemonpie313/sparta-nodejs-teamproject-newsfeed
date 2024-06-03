@@ -108,6 +108,10 @@ export const MESSAGES = {
       NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
       SUCCEED: '댓글 삭제에 성공하였습니다.',
     },
+    LIKE: {
+      LIKE: '좋아요가 반영되었습니다.',
+      LIKE_CANCEL: '좋아요 취소가 반영되었습니다.',
+    },
   },
   JWT: {
     NONE: '인증 정보가 없습니다.',
