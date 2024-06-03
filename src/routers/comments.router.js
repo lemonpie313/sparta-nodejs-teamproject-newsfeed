@@ -24,20 +24,13 @@ router.post('/:postId', authMiddleware, async (req, res, next) => {
         message: MESSAGES.COMMENTS.CREATE.NO_COMMENTS,
       });
     }
-    // 3. comments 테이블과 comment_likes 테이블에 데이터 생성
-    // 3-1. 작성한 내용을 바탕으로 comments 테이블에 comment 생성
+    // 3. 작성한 내용을 바탕으로 comments 테이블에 comment 생성
     const newComment = await prisma.comments.create({
       //comment는 위에서 선언해서.. newComment로 선언함
       data: {
         PostId: +postId,
         UserId: +UserId,
         comment,
-      },
-    });
-    // 3-2. 해당 comment와 1:1 관계를 가지는 comment_likes 생성
-    const newCommentLike = await prisma.CommentLikes.create({
-      data: {
-        CommentId: newComment.commentId,
       },
     });
     // 4. 댓글 작성 결과를 클라이언트에 반환
