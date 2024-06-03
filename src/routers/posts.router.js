@@ -9,6 +9,7 @@ import {
 } from '../middlewares/joi/posts.joi.middleware.js';
 import { GROUP } from '../const/group.const.js';
 import { Prisma } from '@prisma/client';
+import { ROLE } from '../const/role.const.js';
 
 const router = express.Router();
 
@@ -393,7 +394,7 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 				group,
 				User: {
 					UserInfos: {
-						role: 'FAN'
+						role: ROLE.FAN
 					}
 				}
 			},
@@ -401,8 +402,6 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 				postId: true,
 				group: true,
 				postContent: true,
-				postPicture: true,
-				keywords: true,
 				createdAt: true,
 				updatedAt: true,
 				UserId: false,
@@ -438,20 +437,32 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 		next(err);
 	}
 });
-
+// 아티스트 필터 함수
+const setRole = function (group) {
+	if (group === ROLE.CRAVITY) {
+		return ROLE.CRAVITY;
+	} else if (group === ROLE.IVE) {
+		return ROLE.IVE;
+	} else if (group === ROLE.MONSTAX) {
+		return ROLE.MONSTAX;
+	} else if (group === ROLE.WJSN) {
+		return ROLE.WJSN;
+	}
+}
 // 아티스트 게시물 최신순 조회
 router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 어떤 그룹인지 값 가져오기
 		const { group } = req.params;
 
+		const role = setRole(group);
 		// 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
 		const post = await prisma.posts.findMany({
 			where: {
 				group,
 				User: {
 					UserInfos: {
-						role: 'ARTIST'
+						role
 					}
 				}
 			},
@@ -459,8 +470,6 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 				postId: true,
 				group: true,
 				postContent: true,
-				postPicture: true,
-				keywords: true,
 				createdAt: true,
 				updatedAt: true,
 				UserId: false,
