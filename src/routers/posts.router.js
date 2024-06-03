@@ -19,11 +19,11 @@ router.post(
   postValidator,
   async (req, res, next) => {
     try {
-      const { postContent, postPicture, keywords } = req.body;
+      const { postContent, postPicture } = req.body;
       const { group } = req.params;
       const { UserId } = req.user;
 
-      //이미지가 유효한지 (jpg, png 등...)
+      // 이미지가 유효한지 (jpg, png 등...)
       if (postPicture) {
         postPicture.forEach((i) => {
           console.log('검사할것: ' + i);
@@ -52,22 +52,22 @@ router.post(
               group,
               UserId: +UserId,
               postContent,
-              postPicture: postPicture ?? [],
-              keywords: keywords ?? [],
             },
           });
+          let pictures = [];
+          if (postPicture) {
+            for (let i = 0; i < postPicture.length; i++) {
+              const picture = await tx.postPictures.create({
+                data: {
+                  PostId: post.postId,
+                  picture: postPicture[i],
+                },
+              });
+              pictures.push(picture);
+            }
+          }
 
-          const postLikes = await tx.postLikes.create({
-            data: {
-              PostId: post.postId,
-              postLikes: 0,
-            },
-            select: {
-              postLikesId: true,
-              postLikes: true,
-            },
-          });
-          return { ...post, ...postLikes };
+          return { ...post, pictures };
         },
         {
           isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
