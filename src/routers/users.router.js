@@ -8,6 +8,7 @@ import bycrpt from 'bcrypt';
 
 const router = express.Router();
 
+// 회원정보 조회 - 리팩토링 완료
 router.get('/', authMiddleware, async (req, res, next) => {
   try {
     const { UserId } = req.user;
@@ -24,9 +25,6 @@ router.get('/', authMiddleware, async (req, res, next) => {
             nickname: true,
             selfIntroduction: true,
             profilePicture: true,
-            prefer: true,
-            likePosts: true,
-            likeComments: true,
             createdAt: true,
             updatedAt: true,
           },

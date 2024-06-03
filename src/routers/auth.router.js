@@ -13,7 +13,7 @@ import { ROLE } from '../const/role.const.js';
 
 const router = express.Router();
 
-//회원가입
+//회원가입 - 리팩토링 완료
 router.post('/sign-up', signUpValidator, async (req, res, next) => {
   try {
     const {
