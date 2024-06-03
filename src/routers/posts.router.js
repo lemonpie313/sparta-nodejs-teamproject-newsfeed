@@ -13,18 +13,18 @@ import { ROLE } from '../const/role.const.js';
 
 const router = express.Router();
 
-//게시물 작성
+//게시물 작성 -- 리팩토링 완료
 router.post(
 	'/:group',
 	authMiddleware,
 	postValidator,
 	async (req, res, next) => {
 		try {
-			const { postContent, postPicture, keywords } = req.body;
+			const { postContent, postPicture } = req.body;
 			const { group } = req.params;
 			const { UserId } = req.user;
 
-			//이미지가 유효한지 (jpg, png 등...)
+			// 이미지가 유효한지 (jpg, png 등...)
 			if (postPicture) {
 				postPicture.forEach((i) => {
 					console.log('검사할것: ' + i);
@@ -46,7 +46,6 @@ router.post(
 				});
 			}
 
-
 			const post = await prisma.$transaction(
 				async (tx) => {
 					const post = await tx.posts.create({
@@ -54,22 +53,22 @@ router.post(
 							group,
 							UserId: +UserId,
 							postContent,
-							postPicture: postPicture ?? [],
-							keywords: keywords ?? [],
 						},
 					});
+					let pictures = [];
+					if (postPicture) {
+						for (let i = 0; i < postPicture.length; i++) {
+							const picture = await tx.postPictures.create({
+								data: {
+									PostId: post.postId,
+									picture: postPicture[i],
+								},
+							});
+							pictures.push(picture);
+						}
+					}
 
-					const postLikes = await tx.postLikes.create({
-						data: {
-							PostId: post.postId,
-							postLikes: 0,
-						},
-						select: {
-							postLikesId: true,
-							postLikes: true,
-						},
-					});
-					return { ...post, ...postLikes };
+					return { ...post, pictures };
 				},
 				{
 					isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
@@ -100,6 +99,27 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 			where: {
 				UserId,
 			},
+			select: {
+				postId: true,
+				UserId: true,
+				User: {
+					select: {
+						UserInfos: {
+							select: {
+								nickname: true,
+							}
+						}
+					}
+				},
+				PostPictures: {
+					select: {
+						picture: true
+					}
+				},
+				postContent: true,
+				createdAt: true,
+				updatedAt: true,
+			},
 			orderBy: {
 				createdAt: 'desc',
 			},
@@ -115,7 +135,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 	}
 });
 
-// 게시물 수정
+// 게시물 수정 -- 리팩토링 완료
 router.patch(
 	'/:postId',
 	authMiddleware,
@@ -152,19 +172,51 @@ router.patch(
 					message: MESSAGES.POSTS.UPDATE.IS_NOT_EXIST,
 				});
 			}
+			//여기서부터
+			const myPost = await prisma.$transaction(async (tx) => {
+				const post = await tx.posts.update({
+					data: {
+						postContent,
+					},
+					where: {
+						UserId,
+						postId: +postId,
+					},
+					// select: {
+					//   PostPictures: {
+					//     select: {
+					//       postPictureId: true,
+					//     }
+					//   }
+					// }
+				});
+				let pictures = [];
+				if (postPicture != undefined) {
+					const deletedPicture = await tx.postPictures.deleteMany({
+						where: {
+							PostId: +postId,
+						},
+					});
+					for (let i = 0; i < postPicture.length; i++) {
+						const picture = await tx.postPictures.create({
+							data: {
+								PostId: post.postId,
+								picture: postPicture[i],
+							},
+						});
+						pictures.push(picture);
+					}
+				} else {
+					pictures = await tx.postPictures.findMany({
+						where: {
+							PostId: +postId,
+						},
+					});
+				}
 
-			const myPost = await prisma.posts.update({
-				data: {
-					UserId: +UserId,
-					postContent,
-					postPicture,
-					keywords,
-				},
-				where: {
-					UserId: +UserId,
-					postId: +postId,
-				},
+				return { ...post, pictures };
 			});
+			//여기까지
 
 			return res.status(HTTP_STATUS.CREATED).json({
 				status: HTTP_STATUS.CREATED,
@@ -179,7 +231,7 @@ router.patch(
 	}
 );
 
-// 게시물 상세 조회
+// 게시물 상세 조회 -- 리팩토링 완료
 router.get('/:postId', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. postId 받아오기
@@ -193,10 +245,21 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
 			select: {
 				postId: true,
 				postContent: true,
-				postPicture: true,
-				keywords: true,
 				createdAt: true,
 				updatedAt: true,
+				PostPictures: {
+					select: {
+						picture: true,
+						createdAt: true,
+						updatedAt: true
+					}
+				},
+				Comments: {
+					select: {
+						comment: true
+
+					}
+				},
 				User: {
 					select: {
 						UserInfos: {
@@ -218,17 +281,28 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
 				message: MESSAGES.POSTS.READ.IS_NOT_EXIST,
 			});
 		}
+
+		const like = await prisma.likePosts.findMany({
+			where: {
+				PostId: +postId
+			}
+		});
+		const likes = like.length;
+
 		// 4.
 		return res.status(HTTP_STATUS.OK).json({
 			status: HTTP_STATUS.OK,
 			message: MESSAGES.POSTS.READ.SUCCEED,
-			data: detailPost,
+			data: {
+				...detailPost, postLikes: likes
+			}
 		});
 	} catch (err) {
 		next(err);
 	}
 });
 
+// 게시물 삭제
 router.delete('/:postId', authMiddleware, async (req, res, next) => {
 	try {
 		//유저 아이디를 req.user에서 가져옴
@@ -240,6 +314,7 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
 		//해당 게시물이 존재 하는지 검사 params에서 가져온 id = post에서 가져온 id 일치인지
 		const post = await prisma.posts.findFirst({
 			where: {
+				userId: UserId,
 				postId: +postId,
 			},
 		});
@@ -271,11 +346,7 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
 	}
 });
 
-/* 게시물 좋아요 */
-//userInfo의 likePosts에 이미 해당 게시물이 있다
-// -> 좋아요 취소, likePosts에서 postId 삭제, prefer 키워드 카운트 다운
-// 해당 게시물이 없다
-// -> 좋아요 반영, likePosts에 postId 추가, prefer 키워드 카운트 업
+// 게시물 좋아요 - 리팩토링 완료
 router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
 	try {
 		const { postId } = req.params;
@@ -289,13 +360,6 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
 			select: {
 				postId: true,
 				postContent: true,
-				keywords: true,
-				PostLikes: {
-					select: {
-						postLikesId: true,
-						postLikes: true,
-					},
-				},
 			},
 		});
 
@@ -306,87 +370,61 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
 			});
 		}
 
-		//내정보 > 좋아요 여부
-		const userInfo = await prisma.userInfos.findFirst({
+		//좋아요 목록, 좋아요 개수
+		const like = await prisma.likePosts.findMany({
+			where: {
+				PostId: +postId,
+			},
+		});
+		let likes = like.length;
+
+		//사용자가 누른 좋아요 데이터
+		const myInfo = await prisma.userInfos.findFirst({
 			where: {
 				UserId,
 			},
 			select: {
-				UserId: true,
-				prefer: true,
-				likePosts: true,
+				userInfoId: true,
 			},
 		});
+		const likedIt = like.find((cur) => cur.UserInfoId == myInfo.userInfoId);
 
-		//좋아요 수 수정 / userInfo 내용 수정
-		//근데 좋아요 취소할때 userInfo에서 prefer, likePosts 삭제는 데이터가 길면 오래걸릴텐데.......
-		const keywords = post.keywords;
-		let updatedLikes = post.PostLikes.postLikes;
-		let userLikes = userInfo.likePosts;
-		let userPrefer = userInfo.prefer;
-		if (userInfo.likePosts.includes(post.postId)) {
-			updatedLikes -= 1;
-			userLikes = userLikes.filter((cur) => {
-				cur != post.postId;
+		if (likedIt) {
+			await prisma.likePosts.delete({
+				where: {
+					likePostId: likedIt.likePostId,
+				},
 			});
-			keywords.forEach((key) => {
-				if (userPrefer[`${key}`] <= 1) {
-					delete userPrefer[`${key}`];
-				} else {
-					userPrefer[`${key}`] -= 1;
-				}
-			});
+			likes -= 1;
 		} else {
-			updatedLikes += 1;
-			userLikes.push(+postId);
-			keywords.forEach((key) => {
-				if (
-					!Object.keys(userPrefer).includes(`${key}`) ||
-					userPrefer[key] == 0
-				) {
-					userPrefer[key] = 1;
-				} else {
-					userPrefer[key] += 1;
-				}
+			await prisma.likePosts.create({
+				data: {
+					UserInfoId: myInfo.userInfoId,
+					PostId: +postId,
+				},
 			});
+			likes += 1;
 		}
-
-		//좋아요 반영
-		const postLikesUpdated = await prisma.postLikes.update({
-			data: {
-				postLikes: updatedLikes,
-			},
-			where: {
-				PostId: post.postId,
-			},
-		});
-
-		//userInfo 반영
-		const userInfoUpdate = await prisma.userInfos.update({
-			data: {
-				prefer: userPrefer,
-				likePosts: userLikes,
-			},
-			where: {
-				UserId,
-			},
-		});
 
 		res.status(HTTP_STATUS.OK).json({
 			status: HTTP_STATUS.OK,
 			message: MESSAGES.POSTS.LIKES.SUCCEED,
-			data: { postLikesUpdated },
+			data: {
+				post: { ...post, likes },
+			},
 		});
 	} catch (err) {
 		next(err);
 	}
 });
 
-// 팬 게시물 최신순 조회
+// 팬 게시물 최신순 조회 -- 리팩토링 완료
 router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 어떤 그룹인지 값 가져오기
 		const { group } = req.params;
+
+
 
 		// 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
 		const post = await prisma.posts.findMany({
@@ -400,6 +438,13 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 			},
 			select: {
 				postId: true,
+				PostPictures: {
+					select: {
+						picture: true,
+						createdAt: true,
+						updatedAt: true,
+					}
+				},
 				group: true,
 				postContent: true,
 				createdAt: true,
@@ -437,32 +482,22 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 		next(err);
 	}
 });
-// 아티스트 필터 함수
-const setRole = function (group) {
-	if (group === ROLE.CRAVITY) {
-		return ROLE.CRAVITY;
-	} else if (group === ROLE.IVE) {
-		return ROLE.IVE;
-	} else if (group === ROLE.MONSTAX) {
-		return ROLE.MONSTAX;
-	} else if (group === ROLE.WJSN) {
-		return ROLE.WJSN;
-	}
-}
-// 아티스트 게시물 최신순 조회
+
+// 아티스트 게시물 최신순 조회 -- 리팩토링 미완성 ( 좋아요 표시 미구현 )
 router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 어떤 그룹인지 값 가져오기
 		const { group } = req.params;
 
-		const role = setRole(group);
+
+
 		// 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
 		const post = await prisma.posts.findMany({
 			where: {
 				group,
 				User: {
 					UserInfos: {
-						role
+						role: group
 					}
 				}
 			},
@@ -473,16 +508,24 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 				createdAt: true,
 				updatedAt: true,
 				UserId: false,
+				PostPictures: {
+					select: {
+						picture: true,
+						createdAt: true,
+						updatedAt: true
+					}
+				},
 				User: {
 					select: {
 						UserInfos: {
 							select: {
 								nickname: true,
 								role: true,
+
 							}
 						}
 					}
-				}
+				},
 			},
 			orderBy: {
 				createdAt: 'desc'
@@ -496,13 +539,14 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 			});
 		}
 
+
+
 		// 4. 조건에 맞는 게시물이 있을 경우에대한 성공 처리 반환
 		return res.status(HTTP_STATUS.OK).json({
 			status: HTTP_STATUS.OK,
 			message: MESSAGES.POSTS.READ.SUCCEED,
-			data: post
+			data: post,
 		});
-
 	} catch (err) {
 		next(err);
 	}
