@@ -340,11 +340,11 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
       keywords.forEach((key) => {
         if (
           !Object.keys(userPrefer).includes(`${key}`) ||
-          userPrefer[`${key}`] == 0
+          userPrefer[key] == 0
         ) {
-          userPrefer[`${key}`] = 1;
+          userPrefer[key] = 1;
         } else {
-          userPrefer[`${key}`] += 1;
+          userPrefer[key] += 1;
         }
       });
     }
