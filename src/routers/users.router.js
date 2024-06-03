@@ -4,7 +4,7 @@ import authMiddleware from '../middlewares/access-token.middleware.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
 import { MESSAGES } from '../const/messages.const.js';
 import { userInfoUpdateValidator } from '../middlewares/joi/users.joi.middleware.js';
-import bycrpt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 const router = express.Router();
 
@@ -67,9 +67,9 @@ router.patch(
           message: MESSAGES.USERS.UPDATE.IS_NOT_EXIST,
         });
       }
-      console.log(await bycrpt.compare(password, user.password));
+      console.log(await bcrypt.compare(password, user.password));
       console.log(user.password);
-      if (!(await bycrpt.compare(password, user.password))) {
+      if (!(await bcrypt.compare(password, user.password))) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           status: HTTP_STATUS.BAD_REQUEST,
           message: MESSAGES.USERS.UPDATE.PW_NOT_MATCHED,

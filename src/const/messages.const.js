@@ -34,7 +34,11 @@ export const MESSAGES = {
       SUCCEED: '로그인 되었습니다.',
     },
     LOGOUT: {
+      IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
       SUCCEED: '로그아웃 되었습니다.',
+    },
+    TOKEN: {
+      SUCCEED: '토큰 재발급에 성공했습니다.',
     },
   },
   USERS: {
@@ -112,5 +116,7 @@ export const MESSAGES = {
     EXPIRED: '인증 정보가 만료되었습니다.',
     NOT_AVAILABLE: '인증 정보가 유효하지 않습니다.',
     ELSE: '비정상적인 접근입니다.',
+    AGAIM_TOKEN: '토큰 재발급에 성공했습니다',
+    DISCARDED_TOKEN: '폐기된 인증정보입니다.',
   },
 };

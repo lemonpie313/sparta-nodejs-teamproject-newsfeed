@@ -6,11 +6,14 @@ import {
 } from '../middlewares/joi/auth.joi.middleware.js';
 import { MESSAGES } from '../const/messages.const.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
-import bycrpt from 'bcrypt';
+import bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import refreshTokenMiddleware from '../middlewares/refresh-token.middleware.js';
 
 const router = express.Router();
+///
+// const authRouter = express.Router();
 
 //회원가입
 router.post('/sign-up', signUpValidator, async (req, res, next) => {
@@ -36,7 +39,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
       });
     }
 
-    const hashedPassword = await bycrpt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const userInfo = await prisma.$transaction(
       async (tx) => {
@@ -108,7 +111,7 @@ router.post('/log-in', signInValidator, async (req, res, next) => {
     }
 
     //입력받은것, 저장되어있는것
-    if (!(await bycrpt.compare(password, user.password))) {
+    if (!(await bcrypt.compare(password, user.password))) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         status: HTTP_STATUS.BAD_REQUEST,
         message: MESSAGES.AUTH.SIGN_IN.PW_NOT_MATCHED,
@@ -127,7 +130,7 @@ router.post('/log-in', signInValidator, async (req, res, next) => {
     next(err);
   }
 });
-
+//
 const token = async function (payload) {
   const userId = payload.id;
   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET_KEY, {
@@ -137,7 +140,7 @@ const token = async function (payload) {
     expiresIn: '7d',
   });
 
-  const refreshTokenHashed = await bycrpt.hash(refreshToken, 10);
+  const refreshTokenHashed = await bcrypt.hash(refreshToken, 10);
 
   await prisma.RefreshToken.upsert({
     where: {
@@ -155,4 +158,101 @@ const token = async function (payload) {
   return { accessToken, refreshToken };
 };
 
+// //토큰 재발급 : authRouter하면 404 엔드포인트 에러, router 로 하면 500 err
+// router.post('/retoken', refreshTokenMiddleware, async (req, res, next) => {
+//   try {
+//     //유저정보 가져오기
+    
+//     const payload = { id: req.user.UserId };
+//     const userId = payload.id;
+    
+//    const data = await generateAuthTokens(payload);
+
+//     return res.status(HTTP_STATUS.OK).json({
+//       status: HTTP_STATUS.OK,
+//       message: MESSAGES.AUTH.TOKEN.SUCCEED,
+//       data,
+//     })
+    
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+// //위의 수식 줄여줌
+// const generateAuthTokens = async (payload) => {
+//   const userId = payload.id;
+//   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET_KEY, {
+//     expiresIn: '12h',
+//   });
+//   const refreshToken = jwt.sign(
+//     payload,
+//     process.env.REFRESH_TOKEN_SECRET_KEY,
+//     {
+//       expiresIn: '7d',
+//     }
+//   );
+
+//   const refreshTokenHashed = await bcrypt.hash(refreshToken, 10);
+
+//   await prisma.RefreshToken.upsert({
+//     where: {
+//       userId: user.id,
+//     },
+//     update: {
+//       token: refreshTokenHashed,
+//     },
+//     create: {
+//       userId,
+//       token: refreshTokenHashed,
+//     },
+//   });
+//   return { accessToken, refreshToken };
+// }
+
+//로그아웃
+router.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {
+  try {
+    //유저 정보를 받아옴
+    
+      const { UserId } = req.user;
+    const logOutUser = await prisma.refreshToken.delete({
+      where: {
+        //
+        userId: UserId,
+      },
+      select: {
+        userId: true,
+      },
+    })
+    // if (!user || !user.id) {
+    //   return res.status(HTTP_STATUS.NOT_FOUND).json({
+    //     status: HTTP_STATUS.NOT_FOUND,
+    //     message: MESSAGES.AUTH.LOGOUT.IS_NOT_EXIST})
+      
+    // }
+    //RefreshToken.update 할건데 유저아이디는 유저의 아이디를 넣어 구분, RefreshToken null값 줌
+    // await prisma.RefreshToken.update({
+    //   where: { userId: user.id },
+    //   data: {
+    //     token: null
+    //   },
+    // });
+   //
+
+    return res.status(HTTP_STATUS.OK).json({
+      status: HTTP_STATUS.OK,
+      message: MESSAGES.AUTH.LOGOUT.SUCCEED,
+       //사용자 아이디 반환
+      data: { id: user.id },
+      logOutUser,
+    })
+  } catch (err) {
+    next(err)
+  }
+ }
+
+)
 export default router;
+//
+// export { authRouter };
