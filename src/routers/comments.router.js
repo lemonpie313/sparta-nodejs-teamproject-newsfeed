@@ -216,27 +216,24 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
     }
 
     // 3. 내가 이미 좋아요를 눌렀는지 확인
-    const { likeCommentId } = await prisma.LikeComments.findFirst({
+    const checkLikeComment = await prisma.LikeComments.findFirst({
       where: {
         UserInfoId: +UserId,
         CommentId: +commentId,
       },
     });
-    if (!likeCommentId) {
+    if (!checkLikeComment) {
       // 3-A1. 만약 없다면 좋아요 추가하는 로직 실행
       // like_comments 테이블에 데이터 생성!
       await prisma.LikeComments.create({
         data: {
-          UserInfoId: +PostId,
+          UserInfoId: +UserId,
           CommentId: +commentId,
         },
       });
       // 3-A2. 좋아요 추가 결과를 클라이언트에 반환
       // 3-A2-1. 일단 지금 좋아요 총 수를 계산
       const likePeople = await prisma.LikeComments.findMany({
-        select: {
-          UserInfoId,
-        },
         where: {
           CommentId: +commentId,
         },
@@ -256,17 +253,13 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
       // 3-B1. 만약 있다면 좋아요 취소하는 로직 실행
       // like_comments 테이블에서 데이터 삭제!
       await prisma.LikeComments.delete({
-        data: {
-          UserInfoId: +PostId,
-          CommentId: +commentId,
+        where: {
+          likeCommentId: checkLikeComment.likeCommentId,
         },
       });
       // 3-B2. 좋아요 추가 결과를 클라이언트에 반환
       // 3-B2-1. 일단 지금 좋아요 총 수를 계산
       const likePeople = await prisma.LikeComments.findMany({
-        select: {
-          UserInfoId,
-        },
         where: {
           CommentId: +commentId,
         },
