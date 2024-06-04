@@ -5,6 +5,7 @@ import usersRouter from './routers/users.router.js';
 import postsRouter from './routers/posts.router.js';
 import commentsRouter from './routers/comments.router.js';
 import errorHandler from './middlewares/error-handler.middleware.js';
+import refreshTokenMiddleware from './middlewares/refresh-token.middleware.js';
 
 dotEnv.config();
 const app = express();
@@ -20,6 +21,8 @@ app.use('/auth', [authRouter]);
 app.use('/users', [usersRouter]);
 app.use('/posts', [postsRouter]);
 app.use('/comments', [commentsRouter]);
+
+app.use(refreshTokenMiddleware)
 
 app.use(errorHandler);
 

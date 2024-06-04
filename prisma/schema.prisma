@@ -54,7 +54,7 @@ model RefreshToken {
     tokenId Int @id @default(autoincrement()) @map("token_id")
     userId  Int @unique @map("user_id")
 
-    token String @map("token") @db.Text
+    token String? @map("token") @db.Text
 
     createdAt DateTime @default(now()) @map("created_at")
 
