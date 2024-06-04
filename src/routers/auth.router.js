@@ -12,10 +12,10 @@ import jwt from 'jsonwebtoken';
 import { ROLE } from '../const/role.const.js';
 import refreshTokenMiddleware from '../middlewares/refresh-token.middleware.js';
 
-const authRouter = express.Router();
+const router = express.Router();
 
 //회원가입 - 리팩토링 완료
-authRouter.post('/sign-up', signUpValidator, async (req, res, next) => {
+router.post('/sign-up', signUpValidator, async (req, res, next) => {
   try {
     const {
       email,
@@ -89,7 +89,7 @@ authRouter.post('/sign-up', signUpValidator, async (req, res, next) => {
 });
 
 //로그인
-authRouter.post('/log-in', signInValidator, async (req, res, next) => {
+router.post('/log-in', signInValidator, async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -159,7 +159,7 @@ const token = async function (payload) {
 };
 
 //토큰 재발급 : authRouter하면 404 엔드포인트 에러, router 로 하면 500 err
-authRouter.post('/retoken', refreshTokenMiddleware, async (req, res, next) => {
+router.post('/retoken', refreshTokenMiddleware, async (req, res, next) => {
   try {
     //유저정보 가져오기
     
@@ -216,7 +216,7 @@ const generateAuthTokens = async (payload) => {
 }
 
 //로그아웃
-authRouter.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {
+router.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {
   try {
     //유저 정보를 받아옴
     
@@ -248,6 +248,6 @@ authRouter.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => 
  }
 
 )
-export default authRouter;
+export default router;
 //
 // export { authRouter };

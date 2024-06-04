@@ -4,10 +4,10 @@ import authMiddleware from '../middlewares/access-token.middleware.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
 import { MESSAGES } from '../const/messages.const.js';
 
-const commentsRouter = express.Router();
+const router = express.Router();
 
 /** 댓글 작성 API **/
-commentsRouter.post('/:postId', authMiddleware, async (req, res, next) => {
+router.post('/:postId', authMiddleware, async (req, res, next) => {
   try {
     // 1. 댓글 작성에 필요한 정보 가져오기
     // 1-1. req.body로부터 comment를 받아온다.
@@ -45,7 +45,7 @@ commentsRouter.post('/:postId', authMiddleware, async (req, res, next) => {
 });
 
 /** 댓글 삭제 API **/
-commentsRouter.delete('/:commentId', authMiddleware, async (req, res, next) => {
+router.delete('/:commentId', authMiddleware, async (req, res, next) => {
   try {
     // 1. 댓글 작성에 필요한 정보 가져오기
     // 1-1. req.params로부터 commentId 받아온다.
@@ -85,7 +85,7 @@ commentsRouter.delete('/:commentId', authMiddleware, async (req, res, next) => {
 });
 
 /** 댓글 수정 API **/
-commentsRouter.patch('/:commentId', authMiddleware, async (req, res, next) => {
+router.patch('/:commentId', authMiddleware, async (req, res, next) => {
   try {
     // 1. 수정할 때 필요한 자료 가져오기
     // 1-1. req.params로부터 commentId 가져오기
@@ -141,7 +141,7 @@ commentsRouter.patch('/:commentId', authMiddleware, async (req, res, next) => {
 });
 
 /** 내 댓글 목록 조회 API **/
-commentsRouter.get('/me', authMiddleware, async (req, res, next) => {
+router.get('/me', authMiddleware, async (req, res, next) => {
   try {
     // 1. req.user로부터 UserId 가져오기
     const { UserId } = req.user;
@@ -185,7 +185,7 @@ commentsRouter.get('/me', authMiddleware, async (req, res, next) => {
 });
 
 /** 댓글 좋아요 API **/
-commentsRouter.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
+router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
   try {
     // 1. 필요한 정보들 가져오기
     // 1-1. 좋아요를 누른 사람이 누구인가? req.user에서 가져와!
@@ -281,4 +281,4 @@ commentsRouter.patch('/like/:commentId', authMiddleware, async (req, res, next) 
   }
 });
 
-export default commentsRouter;
+export default router;

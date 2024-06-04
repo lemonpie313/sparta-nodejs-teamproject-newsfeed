@@ -1,6 +1,9 @@
 import express from 'express';
 import dotEnv from 'dotenv';
-import { apiRouter } from './routers/index.js';
+import authRouter from './routers/auth.router.js';
+import usersRouter from './routers/users.router.js';
+import postsRouter from './routers/posts.router.js';
+import commentsRouter from './routers/comments.router.js';
 import errorHandler from './middlewares/error-handler.middleware.js';
 import refreshTokenMiddleware from './middlewares/refresh-token.middleware.js';
 
@@ -9,14 +12,15 @@ const app = express();
 const PORT = 3000; // 서버를 열 때 사용할 포트 번호
 
 app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-//위에꺼 프론트 엔드 들어가면 필요한거 아닌가여...?
 
 app.get('/', (req, res) => {
   res.send('루트!!');
 });
 
-app.use('/api', apiRouter);
+app.use('/auth', [authRouter]);
+app.use('/users', [usersRouter]);
+app.use('/posts', [postsRouter]);
+app.use('/comments', [commentsRouter]);
 
 app.use(refreshTokenMiddleware)
 
