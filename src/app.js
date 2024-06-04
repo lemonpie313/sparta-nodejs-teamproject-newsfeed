@@ -21,7 +21,7 @@ app.use('/auth', [authRouter]);
 app.use('/users', [usersRouter]);
 app.use('/posts', [postsRouter]);
 app.use('/comments', [commentsRouter]);
-
+ 
 app.use(refreshTokenMiddleware)
 
 app.use(errorHandler);
