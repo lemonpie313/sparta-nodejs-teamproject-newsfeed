@@ -8,6 +8,7 @@ import bcrypt from 'bcrypt';
 
 const router = express.Router();
 
+// 회원정보 조회 - 리팩토링 완료
 router.get('/', authMiddleware, async (req, res, next) => {
   try {
     const { UserId } = req.user;
@@ -48,7 +49,7 @@ router.patch(
   userInfoUpdateValidator,
   async (req, res, next) => {
     try {
-      const { UserId, role } = req.user;
+      const { UserId } = req.user;
       const { name, nickname, selfIntroduction, profilePicture, password } =
         req.body;
 

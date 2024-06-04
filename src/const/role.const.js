@@ -1,6 +1,7 @@
 export const ROLE = {
   FAN: 'FAN',
-  IVE: 'IVE',
-  CRAVITY: 'CRAVITY',
   MONSTAX: 'MONSTAX',
+  WJSN: 'WJSN',
+  CRAVITY: 'CRAVITY',
+  IVE: 'IVE',
 };

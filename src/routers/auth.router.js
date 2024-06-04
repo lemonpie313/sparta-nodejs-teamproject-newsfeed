@@ -9,11 +9,12 @@ import { HTTP_STATUS } from '../const/http-status.const.js';
 import bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import { ROLE } from '../const/role.const.js';
 import refreshTokenMiddleware from '../middlewares/refresh-token.middleware.js';
 
 const router = express.Router();
 
-//회원가입
+//회원가입 - 리팩토링 완료
 router.post('/sign-up', signUpValidator, async (req, res, next) => {
   try {
     const {
@@ -56,6 +57,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
             UserId: user.userId,
             name,
             nickname,
+            role: ROLE.FAN,
             selfIntroduction,
             profilePicture: profilePicture ?? 'image.jpg',
           },

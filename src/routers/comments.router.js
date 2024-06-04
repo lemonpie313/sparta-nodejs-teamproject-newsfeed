@@ -140,4 +140,145 @@ router.patch('/:commentId', authMiddleware, async (req, res, next) => {
   }
 });
 
+/** 내 댓글 목록 조회 API **/
+router.get('/me', authMiddleware, async (req, res, next) => {
+  try {
+    // 1. req.user로부터 UserId 가져오기
+    const { UserId } = req.user;
+    // 2. 현재 로그인 한 사용자의 댓글 목록만 조회하기
+    const comments = await prisma.comments.findMany({
+      select: {
+        PostId: true,
+        User: {
+          select: {
+            UserInfos: {
+              select: {
+                nickname: true,
+              },
+              where: {
+                UserId: +UserId,
+              },
+            },
+          },
+        },
+        commentId: true,
+        comment: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      where: {
+        UserId: +UserId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    // 3. 내 댓글 목록 조회 결과를 클라이언트에 반환
+    return res.status(HTTP_STATUS.OK).json({
+      status: HTTP_STATUS.OK,
+      message: MESSAGES.COMMENTS.READ.SUCCEED,
+      data: comments,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/** 댓글 좋아요 API **/
+router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
+  try {
+    // 1. 필요한 정보들 가져오기
+    // 1-1. 좋아요를 누른 사람이 누구인가? req.user에서 가져와!
+    const { UserId } = req.user;
+    // 1-2. 그리고 이 댓글의 id가 무엇인가? req.params에서 가져와!
+    const { commentId } = req.params;
+    // 1-3. 이 댓글이 어느 글에 달려있는 것인지 Post_id도 가져와!
+    const { PostId } = await prisma.comments.findFirst({
+      where: {
+        commentId: +commentId,
+      },
+    });
+
+    // 2. 이 API가 실행될 최소조건을 갖추었는지 검사
+    // 2-1. 해당 댓글이 달린 게시글이 존재하는지 먼저 검사
+    if (!PostId) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: MESSAGES.COMMENTS.LIKE.NO_POST,
+      });
+    }
+    // 2-2. 해당 댓글이 존재하는지 먼저 검사
+    if (!commentId) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: MESSAGES.COMMENTS.LIKE.NO_COMMENTS,
+      });
+    }
+
+    // 3. 내가 이미 좋아요를 눌렀는지 확인
+    const checkLikeComment = await prisma.LikeComments.findFirst({
+      where: {
+        UserInfoId: +UserId,
+        CommentId: +commentId,
+      },
+    });
+    if (!checkLikeComment) {
+      // 3-A1. 만약 없다면 좋아요 추가하는 로직 실행
+      // like_comments 테이블에 데이터 생성!
+      await prisma.LikeComments.create({
+        data: {
+          UserInfoId: +UserId,
+          CommentId: +commentId,
+        },
+      });
+      // 3-A2. 좋아요 추가 결과를 클라이언트에 반환
+      // 3-A2-1. 일단 지금 좋아요 총 수를 계산
+      const likePeople = await prisma.LikeComments.findMany({
+        where: {
+          CommentId: +commentId,
+        },
+      });
+      const likes = likePeople.length;
+      // 3-A2-2. 결과 총 정리해서 클라이언트에게 반환
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        message: MESSAGES.COMMENTS.LIKE.LIKE,
+        data: {
+          postId: +PostId,
+          commentId: +commentId,
+          likes: likes,
+        },
+      });
+    } else {
+      // 3-B1. 만약 있다면 좋아요 취소하는 로직 실행
+      // like_comments 테이블에서 데이터 삭제!
+      await prisma.LikeComments.delete({
+        where: {
+          likeCommentId: checkLikeComment.likeCommentId,
+        },
+      });
+      // 3-B2. 좋아요 추가 결과를 클라이언트에 반환
+      // 3-B2-1. 일단 지금 좋아요 총 수를 계산
+      const likePeople = await prisma.LikeComments.findMany({
+        where: {
+          CommentId: +commentId,
+        },
+      });
+      const likes = likePeople.length;
+      // 3-B2-2. 결과 총 정리해서 클라이언트에게 반환
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        message: MESSAGES.COMMENTS.LIKE.LIKE_CANCEL,
+        data: {
+          postId: +PostId,
+          commentId: +commentId,
+          likes: likes,
+        },
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;
