@@ -109,6 +109,53 @@ router.patch(
     }
   }
 );
+// 다른 사람 프로필 조회
+router.get('/:userInfoId', authMiddleware, async (req, res, next) => {
+  // 1. userInfoId 받아오기
+  const { userInfoId } = req.params;
+  console.log(userInfoId);
+
+  // 2. 테이블에서 해당 조건 값 가져오기
+  const profile = await prisma.userInfos.findUnique({
+    where: {
+      userInfoId: +userInfoId,
+    },
+    select: {
+      userInfoId: true,
+      role: true,
+      nickname: true,
+      selfIntroduction: true,
+      profilePicture: true,
+      createdAt: true,
+      updatedAt: true,
+      User: {
+        select: {
+          Posts: {
+            select: {
+              postId: true,
+              postContent: true,
+              group: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // 3. 오류 처리 반환
+  if (!profile) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      status: HTTP_STATUS.NOT_FOUND,
+      message: MESSAGES.USERS.READ.IS_NOT_EXIST,
+    });
+  }
+  // 4. 성공 처리 반환
+  return res.status(HTTP_STATUS.OK).json({
+    status: HTTP_STATUS.OK,
+    message: MESSAGES.USERS.READ.SUCCEED,
+    data: profile,
+  });
+});
 
 /** 비밀번호 수정 API **/
 router.patch(

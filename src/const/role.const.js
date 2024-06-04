@@ -4,4 +4,5 @@ export const ROLE = {
   WJSN: 'WJSN',
   CRAVITY: 'CRAVITY',
   IVE: 'IVE',
+  ADMIN: 'ADMIN',
 };
