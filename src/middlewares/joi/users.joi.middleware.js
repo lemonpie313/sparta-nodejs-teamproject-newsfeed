@@ -21,6 +21,21 @@ const userInfoUpdateSchema = await Joi.object({
   profilePicture: Joi.array(),
 });
 
+const passwordUpdateSchema = await Joi.object({
+  password: Joi.string().required().min(6).messages({
+    'any.required': MESSAGES.AUTH.COMMON.PASSWORD.REQUIRED,
+    'string.min': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
+  }),
+  newPassword: Joi.string().required().min(6).messages({
+    'any.required': MESSAGES.AUTH.COMMON.PASSWORD.REQUIRED,
+    'string.min': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
+  }),
+  newPasswordConfirm: Joi.string().required().min(6).messages({
+    'any.required': MESSAGES.AUTH.COMMON.PASSWORD.REQUIRED,
+    'string.min': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
+  }),
+});
+
 const userInfoUpdateValidator = async (req, res, next) => {
   try {
     await userInfoUpdateSchema.validateAsync(req.body);
@@ -30,4 +45,13 @@ const userInfoUpdateValidator = async (req, res, next) => {
   }
 };
 
-export { userInfoUpdateValidator };
+const passwordUpdateValidator = async (req, res, next) => {
+  try {
+    await passwordUpdateSchema.validateAsync(req.body);
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { userInfoUpdateValidator, passwordUpdateValidator };

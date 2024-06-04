@@ -3,7 +3,10 @@ import { prisma } from '../utils/prisma/index.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
 import { MESSAGES } from '../const/messages.const.js';
-import { userInfoUpdateValidator } from '../middlewares/joi/users.joi.middleware.js';
+import {
+  userInfoUpdateValidator,
+  passwordUpdateValidator,
+} from '../middlewares/joi/users.joi.middleware.js';
 import bcrypt from 'bcrypt';
 
 const router = express.Router();
@@ -100,6 +103,83 @@ router.patch(
         status: HTTP_STATUS.OK,
         message: MESSAGES.USERS.UPDATE.SUCCEED,
         data: { myInfo },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+/** 비밀번호 수정 API **/
+router.patch(
+  '/password',
+  authMiddleware,
+  passwordUpdateValidator,
+  async (req, res, next) => {
+    try {
+      // 1. 필요한 정보 가져오기
+      // 1-1. req.user에서 UserId 가져오기
+      const { UserId } = req.user;
+      // 1-2. req.body에서 클라이언트로부터 입력된 값 받아오기
+      const { password, newPassword, newPasswordConfirm } = req.body;
+
+      // 2. 비밀번호 관련 검사
+      // 2-1. 입력된 newPassword와 newPasswordConfirm이 일치하는가?
+      if (newPassword !== newPasswordConfirm) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: MESSAGES.USERS.PW_UPDATE.NEW_PW_NOT_MATCHED,
+        });
+      }
+      // 2-2. password가 UserId를 가지고 찾은 회원의 password와 일치하는가?
+      const user = await prisma.Users.findFirst({
+        where: {
+          userId: UserId,
+        },
+        select: {
+          userId: true,
+          password: true,
+        },
+      });
+      if (!user) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          status: HTTP_STATUS.NOT_FOUND,
+          message: MESSAGES.USERS.UPDATE.IS_NOT_EXIST,
+        });
+      }
+      if (!(await bcrypt.compare(password, user.password))) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: MESSAGES.USERS.PW_UPDATE.PW_NOT_MATCHED,
+        });
+      }
+      if (await bcrypt.compare(newPassword, user.password)) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: MESSAGES.USERS.PW_UPDATE.SAME_PASSWORD,
+        });
+      }
+
+      // 3. 새 비밀번호로 변경
+      // 3-1. 새 비밀번호를 hash해줌
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      // 3-2. 새 비밀번호로 업데이트 해줌
+      const passwordChange = await prisma.users.update({
+        data: {
+          password: hashedPassword,
+        },
+        where: {
+          userId: user.userId,
+        },
+      });
+
+      //4. 비밀번호 변경 결과를 클라이언트에 반환
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        message: MESSAGES.USERS.PW_UPDATE.SUCCEED,
+        data: {
+          userId: user.userId,
+        },
       });
     } catch (err) {
       next(err);
