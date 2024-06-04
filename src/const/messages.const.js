@@ -28,6 +28,9 @@ export const MESSAGES = {
       IS_EXIST: '이미 가입된 사용자입니다.',
       SUCCEED: '회원가입에 성공했습니다.',
     },
+    SIGN_UP_ARTIST: {
+      NOT_AVAILABLE: '회원가입을 할 수 없습니다.',
+    },
     SIGN_IN: {
       IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
       PW_NOT_MATCHED: '비밀번호가 일치하지 않습니다.',
@@ -59,6 +62,12 @@ export const MESSAGES = {
       IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
       PW_NOT_MATCHED: '비밀번호가 일치하지 않습니다.',
       SUCCEED: '회원정보 수정이 완료되었습니다.',
+    },
+    PW_UPDATE: {
+      SUCCEED: '비밀번호 변경에 성공하였습니다.',
+      PW_NOT_MATCHED: '기존 비밀번호가 일치하지 않습니다.',
+      NEW_PW_NOT_MATCHED: '새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.',
+      SAME_PASSWORD: '기존 비밀번호는 새 비밀번호로 등록이 불가능합니다.',
     },
   },
   POSTS: {
