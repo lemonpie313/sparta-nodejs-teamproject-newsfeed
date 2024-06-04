@@ -6,10 +6,10 @@ import { MESSAGES } from '../const/messages.const.js';
 import { userInfoUpdateValidator } from '../middlewares/joi/users.joi.middleware.js';
 import bcrypt from 'bcrypt';
 
-const router = express.Router();
+const usersRouter = express.Router();
 
 // 회원정보 조회 - 리팩토링 완료
-router.get('/', authMiddleware, async (req, res, next) => {
+usersRouter.get('/', authMiddleware, async (req, res, next) => {
   try {
     const { UserId } = req.user;
     const user = await prisma.Users.findFirst({
@@ -43,7 +43,7 @@ router.get('/', authMiddleware, async (req, res, next) => {
 });
 
 // 내 정보 수정 API
-router.patch(
+usersRouter.patch(
   '/',
   authMiddleware,
   userInfoUpdateValidator,
@@ -107,4 +107,4 @@ router.patch(
   }
 );
 
-export default router;
+export default usersRouter;

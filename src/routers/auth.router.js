@@ -12,10 +12,10 @@ import jwt from 'jsonwebtoken';
 import { ROLE } from '../const/role.const.js';
 import refreshTokenMiddleware from '../middlewares/refresh-token.middleware.js';
 
-const router = express.Router();
+const authRouter = express.Router();
 
 //회원가입 - 리팩토링 완료
-router.post('/sign-up', signUpValidator, async (req, res, next) => {
+authRouter.post('/sign-up', signUpValidator, async (req, res, next) => {
   try {
     const {
       email,
@@ -89,7 +89,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 });
 
 //로그인
-router.post('/log-in', signInValidator, async (req, res, next) => {
+authRouter.post('/log-in', signInValidator, async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -158,60 +158,65 @@ const token = async function (payload) {
   return { accessToken, refreshToken };
 };
 
-// //토큰 재발급 : authRouter하면 404 엔드포인트 에러, router 로 하면 500 err
-// router.post('/retoken', refreshTokenMiddleware, async (req, res, next) => {
-//   try {
-//     //유저정보 가져오기
+//토큰 재발급 : authRouter하면 404 엔드포인트 에러, router 로 하면 500 err
+authRouter.post('/retoken', refreshTokenMiddleware, async (req, res, next) => {
+  try {
+    //유저정보 가져오기
     
-//     const payload = { id: req.user.UserId };
-//     const userId = payload.id;
+    const user = req.user;
+    console.log(user)
+    const payload = { id: user.userId };
+    console.log("payload에 들은것ㅇㅇㅇ", payload)
+
     
-//    const data = await generateAuthTokens(payload);
+    console.log("process.env.ACCESS_TOKEN_SECRET_KEY에 담긴 것ooo", process.env.ACCESS_TOKEN_SECRET_KEY)
+   
+    const data = await generateAuthTokens(payload);
 
-//     return res.status(HTTP_STATUS.OK).json({
-//       status: HTTP_STATUS.OK,
-//       message: MESSAGES.AUTH.TOKEN.SUCCEED,
-//       data,
-//     })
+    return res.status(HTTP_STATUS.OK).json({
+      status: HTTP_STATUS.OK,
+      message: MESSAGES.AUTH.TOKEN.SUCCEED,
+      data,
+    })
     
-//   } catch (err) {
-//     next(err);
-//   }
-// });
+  } catch (err) {
+    next(err);
+  }
+});
 
-// //위의 수식 줄여줌
-// const generateAuthTokens = async (payload) => {
-//   const userId = payload.id;
-//   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET_KEY, {
-//     expiresIn: '12h',
-//   });
-//   const refreshToken = jwt.sign(
-//     payload,
-//     process.env.REFRESH_TOKEN_SECRET_KEY,
-//     {
-//       expiresIn: '7d',
-//     }
-//   );
+//위의 수식 줄여줌
+const generateAuthTokens = async (payload) => {
+  const userId = payload.id;
+  const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET_KEY, {
+    expiresIn: '12h',
+  });
+  const refreshToken = jwt.sign(
+    payload,
+    process.env.REFRESH_TOKEN_SECRET_KEY,
+    {
+      expiresIn: '7d',
+    }
+  );
 
-//   const refreshTokenHashed = await bcrypt.hash(refreshToken, 10);
+  const refreshTokenHashed = await bcrypt.hash(refreshToken, 10);
 
-//   await prisma.RefreshToken.upsert({
-//     where: {
-//       userId: user.id,
-//     },
-//     update: {
-//       token: refreshTokenHashed,
-//     },
-//     create: {
-//       userId,
-//       token: refreshTokenHashed,
-//     },
-//   });
-//   return { accessToken, refreshToken };
-// }
+  await prisma.RefreshToken.upsert({
+    where: {
+      userId,
+    },
+    update: {
+      token: refreshTokenHashed,
+    },
+    create: {
+      userId,
+      token: refreshTokenHashed,
+    },
+  });
+  return { accessToken, refreshToken };
+}
 
 //로그아웃
-router.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {
+authRouter.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {
   try {
     //유저 정보를 받아옴
     
@@ -243,6 +248,6 @@ router.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {
  }
 
 )
-export default router;
+export default authRouter;
 //
 // export { authRouter };

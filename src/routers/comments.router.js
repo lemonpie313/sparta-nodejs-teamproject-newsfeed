@@ -4,10 +4,10 @@ import authMiddleware from '../middlewares/access-token.middleware.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
 import { MESSAGES } from '../const/messages.const.js';
 
-const router = express.Router();
+const commentsRouter = express.Router();
 
 /** 댓글 작성 API **/
-router.post('/:postId', authMiddleware, async (req, res, next) => {
+commentsRouter.post('/:postId', authMiddleware, async (req, res, next) => {
   try {
     // 1. 댓글 작성에 필요한 정보 가져오기
     // 1-1. req.body로부터 comment를 받아온다.
@@ -45,7 +45,7 @@ router.post('/:postId', authMiddleware, async (req, res, next) => {
 });
 
 /** 댓글 삭제 API **/
-router.delete('/:commentId', authMiddleware, async (req, res, next) => {
+commentsRouter.delete('/:commentId', authMiddleware, async (req, res, next) => {
   try {
     // 1. 댓글 작성에 필요한 정보 가져오기
     // 1-1. req.params로부터 commentId 받아온다.
@@ -85,7 +85,7 @@ router.delete('/:commentId', authMiddleware, async (req, res, next) => {
 });
 
 /** 댓글 수정 API **/
-router.patch('/:commentId', authMiddleware, async (req, res, next) => {
+commentsRouter.patch('/:commentId', authMiddleware, async (req, res, next) => {
   try {
     // 1. 수정할 때 필요한 자료 가져오기
     // 1-1. req.params로부터 commentId 가져오기
@@ -141,7 +141,7 @@ router.patch('/:commentId', authMiddleware, async (req, res, next) => {
 });
 
 /** 내 댓글 목록 조회 API **/
-router.get('/me', authMiddleware, async (req, res, next) => {
+commentsRouter.get('/me', authMiddleware, async (req, res, next) => {
   try {
     // 1. req.user로부터 UserId 가져오기
     const { UserId } = req.user;
@@ -185,7 +185,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 });
 
 /** 댓글 좋아요 API **/
-router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
+commentsRouter.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
   try {
     // 1. 필요한 정보들 가져오기
     // 1-1. 좋아요를 누른 사람이 누구인가? req.user에서 가져와!
@@ -281,4 +281,4 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
   }
 });
 
-export default router;
+export default commentsRouter;

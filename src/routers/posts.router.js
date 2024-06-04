@@ -11,10 +11,10 @@ import { GROUP } from '../const/group.const.js';
 import { ROLE } from '../const/role.const.js';
 import { Prisma } from '@prisma/client';
 
-const router = express.Router();
+const postsRouter = express.Router();
 
 //게시물 작성 -- 리팩토링 완료
-router.post(
+postsRouter.post(
   '/:group',
   authMiddleware,
   postValidator,
@@ -116,7 +116,7 @@ router.post(
 );
 
 // 내 게시물 목록 조회
-router.get('/me', authMiddleware, async (req, res, next) => {
+postsRouter.get('/me', authMiddleware, async (req, res, next) => {
   try {
     // 1. 받아온 req.user에서 userId 가져온다.
     const { UserId } = req.user;
@@ -168,7 +168,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 });
 
 // 게시물 수정 -- 리팩토링 완료
-router.patch(
+postsRouter.patch(
   '/:postId',
   authMiddleware,
   postEditValidator,
@@ -284,7 +284,7 @@ router.patch(
 );
 
 // 게시물 상세 조회 -- 리팩토링 완료
-router.get('/:postId', authMiddleware, async (req, res, next) => {
+postsRouter.get('/:postId', authMiddleware, async (req, res, next) => {
   try {
     // 1. postId 받아오기
     const { postId } = req.params;
@@ -351,7 +351,7 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
 });
 
 // 게시물 삭제
-router.delete('/:postId', authMiddleware, async (req, res, next) => {
+postsRouter.delete('/:postId', authMiddleware, async (req, res, next) => {
   try {
     //유저 아이디를 req.user에서 가져옴
     const { UserId } = req.user;
@@ -389,7 +389,7 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
 });
 
 // 게시물 좋아요 - 리팩토링 완료
-router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
+postsRouter.patch('/like/:postId', authMiddleware, async (req, res, next) => {
   try {
     const { postId } = req.params;
     const { UserId } = req.user;
@@ -508,7 +508,7 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
 });
 
 // 팬 게시물 최신순 조회 -- 리팩토링 완료
-router.get('/recent/:group', authMiddleware, async (req, res, next) => {
+postsRouter.get('/recent/:group', authMiddleware, async (req, res, next) => {
   try {
     // 1. 어떤 그룹인지 값 가져오기
     const { group } = req.params;
@@ -575,7 +575,7 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 });
 
 // 아티스트 게시물 최신순 조회 -- 리팩토링 미완성 ( 좋아요 표시 미구현 )
-router.get('/artists/:group', authMiddleware, async (req, res, next) => {
+postsRouter.get('/artists/:group', authMiddleware, async (req, res, next) => {
   try {
     // 1. 어떤 그룹인지 값 가져오기
     const { group } = req.params;
@@ -643,4 +643,4 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
   }
 });
 
-export default router;
+export default postsRouter;
