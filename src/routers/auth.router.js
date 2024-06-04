@@ -16,7 +16,7 @@ import { ARTIST_ID } from '../const/artistId.const.js';
 
 const router = express.Router();
 
-//회원가입 - 팬 전용
+//회원가입 - 일반
 router.post('/sign-up', signUpValidator, async (req, res, next) => {
   try {
     const {
@@ -59,7 +59,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
             UserId: user.userId,
             name,
             nickname,
-            role: ROLE.FAN,
+            role: user.userId == 1 ? ROLE.ADMIN : ROLE.FAN,
             selfIntroduction,
             profilePicture: profilePicture ?? 'image.jpg',
           },
@@ -91,98 +91,102 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 });
 
 //회원가입 - 아티스트 전용
-router.post('/sign-up/artists', signUpArtistValidator, async (req, res, next) => {
-  try {
-    const {
-      email,
-      artistId,
-      password,
-      name,
-      nickname,
-      selfIntroduction,
-      profilePicture,
-    } = req.body;
-    const isExistEmail = await prisma.users.findFirst({
-      //db의 이메일:body의 이메일
-      where: {
+router.post(
+  '/sign-up/artists',
+  signUpArtistValidator,
+  async (req, res, next) => {
+    try {
+      const {
         email,
-      },
-    });
-    if (isExistEmail) {
-      return res.status(HTTP_STATUS.CONFLICT).json({
-        status: HTTP_STATUS.CONFLICT,
-        message: MESSAGES.AUTH.SIGN_UP.NOT_AVAILABLE,
+        artistId,
+        password,
+        name,
+        nickname,
+        selfIntroduction,
+        profilePicture,
+      } = req.body;
+      const isExistEmail = await prisma.users.findFirst({
+        //db의 이메일:body의 이메일
+        where: {
+          email,
+        },
       });
+      if (isExistEmail) {
+        return res.status(HTTP_STATUS.CONFLICT).json({
+          status: HTTP_STATUS.CONFLICT,
+          message: MESSAGES.AUTH.SIGN_UP.NOT_AVAILABLE,
+        });
+      }
+
+      let artist;
+      switch (artistId) {
+        case ARTIST_ID.MONSTAX:
+          artist = ROLE.MONSTAX;
+          break;
+        case ARTIST_ID.WJSN:
+          artist = ROLE.WJSN;
+          break;
+        case ARTIST_ID.CRAVITY:
+          artist = ROLE.CRAVITY;
+          break;
+        case ARTIST_ID.IVE:
+          artist = ROLE.IVE;
+        default:
+          return res.status(HTTP_STATUS.FORBIDDEN).json({
+            status: HTTP_STATUS.FORBIDDEN,
+            message: MESSAGES.AUTH.SIGN_UP_ARTIST.NOT_AVAILABLE,
+          });
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const userInfo = await prisma.$transaction(
+        async (tx) => {
+          const user = await tx.Users.create({
+            data: {
+              email,
+              password: hashedPassword,
+            },
+            select: {
+              userId: true,
+              email: true,
+            },
+          });
+          const userInfo = await tx.UserInfos.create({
+            data: {
+              UserId: user.userId,
+              name,
+              nickname,
+              role: artist,
+              selfIntroduction,
+              profilePicture: profilePicture ?? 'image.jpg',
+            },
+            select: {
+              name: true,
+              role: true,
+              nickname: true,
+              selfIntroduction: true,
+              profilePicture: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          });
+          return { ...user, ...userInfo };
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        }
+      );
+
+      return res.status(HTTP_STATUS.CREATED).json({
+        status: HTTP_STATUS.CREATED,
+        message: MESSAGES.AUTH.SIGN_UP.SUCCEED,
+        data: { userInfo },
+      });
+    } catch (err) {
+      next(err);
     }
-
-    let artist;
-    switch (artistId) {
-      case '0000':
-        artist = ROLE.MONSTAX;
-        break;
-      case '1111':
-        artist = ROLE.WJSN;
-        break;
-      case '2222':
-        artist = ROLE.CRAVITY;
-        break;
-      case '3333':
-        artist = ROLE.IVE;
-      default:
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
-          status: HTTP_STATUS.FORBIDDEN,
-          message: MESSAGES.AUTH.SIGN_UP_ARTIST.NOT_AVAILABLE,
-        });
-      }
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const userInfo = await prisma.$transaction(
-      async (tx) => {
-        const user = await tx.Users.create({
-          data: {
-            email,
-            password: hashedPassword,
-          },
-          select: {
-            userId: true,
-            email: true,
-          },
-        });
-        const userInfo = await tx.UserInfos.create({
-          data: {
-            UserId: user.userId,
-            name,
-            nickname,
-            role: artist,
-            selfIntroduction,
-            profilePicture: profilePicture ?? 'image.jpg',
-          },
-          select: {
-            name: true,
-            role: true,
-            nickname: true,
-            selfIntroduction: true,
-            profilePicture: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        });
-        return { ...user, ...userInfo };
-      },
-      {
-        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-      }
-    );
-
-    return res.status(HTTP_STATUS.CREATED).json({
-      status: HTTP_STATUS.CREATED,
-      message: MESSAGES.AUTH.SIGN_UP.SUCCEED,
-      data: { userInfo },
-    });
-  } catch (err) {
-    next(err);
   }
-});
+);
 
 //로그인
 router.post('/log-in', signInValidator, async (req, res, next) => {
@@ -237,7 +241,7 @@ const token = async function (payload) {
   });
 
   const refreshTokenHashed = await bcrypt.hash(refreshToken, 10);
-//
+  //
   await prisma.RefreshToken.upsert({
     where: {
       userId,
@@ -258,10 +262,10 @@ const token = async function (payload) {
 // router.post('/retoken', refreshTokenMiddleware, async (req, res, next) => {
 //   try {
 //     //유저정보 가져오기
-    
+
 //     const payload = { id: req.user.UserId };
 //     const userId = payload.id;
-    
+
 //    const data = await generateAuthTokens(payload);
 
 //     return res.status(HTTP_STATUS.OK).json({
@@ -269,7 +273,7 @@ const token = async function (payload) {
 //       message: MESSAGES.AUTH.TOKEN.SUCCEED,
 //       data,
 //     })
-    
+
 //   } catch (err) {
 //     next(err);
 //   }
@@ -310,35 +314,33 @@ const token = async function (payload) {
 router.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {
   try {
     //유저 정보를 받아옴
-    
+
     const { userId } = req.user;
-    
+
     const logOutUser = await prisma.refreshToken.delete({
       where: {
-        //delete : 삭제하면서 삭제한ㄴ 데이터 
+        //delete : 삭제하면서 삭제한ㄴ 데이터
         userId: userId,
       },
       select: {
         userId: true,
       },
-    })
-    console.log("logOutUser", logOutUser)
+    });
+    console.log('logOutUser', logOutUser);
 
     return res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.AUTH.LOGOUT.SUCCEED,
-       //사용자 아이디 반환
+      //사용자 아이디 반환
       //logOutUser에 리프레시 토큰테이블 삭제한 데이터
       data:
         // { id: logOutUser.userId },
-      logOutUser,
-    })
+        logOutUser,
+    });
   } catch (err) {
-    next(err)
+    next(err);
   }
- }
-
-)
+});
 export default router;
 //
 // export { authRouter };
