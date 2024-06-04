@@ -8,8 +8,8 @@ import {
   postEditValidator,
 } from '../middlewares/joi/posts.joi.middleware.js';
 import { GROUP } from '../const/group.const.js';
-import { Prisma } from '@prisma/client';
 import { ROLE } from '../const/role.const.js';
+import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
@@ -53,6 +53,33 @@ router.post(
               group,
               UserId: +UserId,
               postContent,
+            },
+            select: {
+              postId: true,
+              postContent: true,
+              createdAt: true,
+              updatedAt: true,
+              Comments: {
+                select: {
+                  comment: true,
+                },
+              },
+              User: {
+                select: {
+                  UserInfos: {
+                    select: {
+                      nickname: true,
+                      UserId: true,
+                    },
+                  },
+                },
+              },
+
+              _count: {
+                select: {
+                  LikePosts: true,
+                },
+              },
             },
           });
           let pictures = [];
@@ -117,6 +144,11 @@ router.get('/me', authMiddleware, async (req, res, next) => {
           },
         },
         postContent: true,
+        _count: {
+          select: {
+            LikePosts: true,
+          },
+        },
         createdAt: true,
         updatedAt: true,
       },
@@ -182,13 +214,33 @@ router.patch(
             UserId,
             postId: +postId,
           },
-          // select: {
-          //   PostPictures: {
-          //     select: {
-          //       postPictureId: true,
-          //     }
-          //   }
-          // }
+          select: {
+            postId: true,
+            postContent: true,
+            createdAt: true,
+            updatedAt: true,
+            Comments: {
+              select: {
+                comment: true,
+              },
+            },
+            User: {
+              select: {
+                UserInfos: {
+                  select: {
+                    nickname: true,
+                    UserId: true,
+                  },
+                },
+              },
+            },
+
+            _count: {
+              select: {
+                LikePosts: true,
+              },
+            },
+          },
         });
         let pictures = [];
         if (postPicture != undefined) {
@@ -269,6 +321,12 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
             },
           },
         },
+
+        _count: {
+          select: {
+            LikePosts: true,
+          },
+        },
       },
     });
 
@@ -281,21 +339,11 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
       });
     }
 
-    const like = await prisma.likePosts.findMany({
-      where: {
-        PostId: +postId,
-      },
-    });
-    const likes = like.length;
-
     // 4.
     return res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.READ.SUCCEED,
-      data: {
-        ...detailPost,
-        postLikes: likes,
-      },
+      data: detailPost,
     });
   } catch (err) {
     next(err);
@@ -347,20 +395,27 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
     const { UserId } = req.user;
 
     //게시물 찾기
-    const post = await prisma.posts.findFirst({
+    const likepost = await prisma.posts.findFirst({
       where: {
         postId: +postId,
       },
       select: {
+        UserId: true,
         postId: true,
         postContent: true,
       },
     });
 
-    if (!post) {
+    if (!likepost) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         status: HTTP_STATUS.NOT_FOUND,
         message: MESSAGES.POSTS.LIKES.IS_NOT_EXIST,
+      });
+    }
+    if (likepost.UserId == UserId) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: MESSAGES.POSTS.LIKES.NOT_AVAILABLE,
       });
     }
 
@@ -400,11 +455,51 @@ router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
       likes += 1;
     }
 
+    const post = await prisma.posts.findUnique({
+      where: {
+        postId: +postId,
+      },
+      select: {
+        postId: true,
+        postContent: true,
+        createdAt: true,
+        updatedAt: true,
+        PostPictures: {
+          select: {
+            picture: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        Comments: {
+          select: {
+            comment: true,
+          },
+        },
+        User: {
+          select: {
+            UserInfos: {
+              select: {
+                nickname: true,
+                UserId: true,
+              },
+            },
+          },
+        },
+
+        _count: {
+          select: {
+            LikePosts: true,
+          },
+        },
+      },
+    });
+
     res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.POSTS.LIKES.SUCCEED,
       data: {
-        post: { ...post, likes },
+        post: { post },
       },
     });
   } catch (err) {
@@ -449,6 +544,11 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
                 nickname: true,
               },
             },
+          },
+        },
+        _count: {
+          select: {
+            LikePosts: true,
           },
         },
       },
@@ -512,6 +612,11 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
                 role: true,
               },
             },
+          },
+        },
+        _count: {
+          select: {
+            LikePosts: true,
           },
         },
       },
