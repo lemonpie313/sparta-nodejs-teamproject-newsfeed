@@ -12,8 +12,6 @@ import jwt from 'jsonwebtoken';
 import refreshTokenMiddleware from '../middlewares/refresh-token.middleware.js';
 
 const router = express.Router();
-///
-// const authRouter = express.Router();
 
 //회원가입
 router.post('/sign-up', signUpValidator, async (req, res, next) => {
@@ -141,7 +139,7 @@ const token = async function (payload) {
   });
 
   const refreshTokenHashed = await bcrypt.hash(refreshToken, 10);
-
+//
   await prisma.RefreshToken.upsert({
     where: {
       userId,
@@ -215,36 +213,26 @@ router.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {
   try {
     //유저 정보를 받아옴
     
-      const { UserId } = req.user;
+    const { userId } = req.user;
+    
     const logOutUser = await prisma.refreshToken.delete({
       where: {
-        //
-        userId: UserId,
+        //delete : 삭제하면서 삭제한ㄴ 데이터 
+        userId: userId,
       },
       select: {
         userId: true,
       },
     })
-    // if (!user || !user.id) {
-    //   return res.status(HTTP_STATUS.NOT_FOUND).json({
-    //     status: HTTP_STATUS.NOT_FOUND,
-    //     message: MESSAGES.AUTH.LOGOUT.IS_NOT_EXIST})
-      
-    // }
-    //RefreshToken.update 할건데 유저아이디는 유저의 아이디를 넣어 구분, RefreshToken null값 줌
-    // await prisma.RefreshToken.update({
-    //   where: { userId: user.id },
-    //   data: {
-    //     token: null
-    //   },
-    // });
-   //
+    console.log("logOutUser", logOutUser)
 
     return res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.AUTH.LOGOUT.SUCCEED,
        //사용자 아이디 반환
-      data: { id: user.id },
+      //logOutUser에 리프레시 토큰테이블 삭제한 데이터
+      data:
+        // { id: logOutUser.userId },
       logOutUser,
     })
   } catch (err) {
