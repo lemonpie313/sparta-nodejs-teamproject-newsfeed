@@ -1,9 +1,6 @@
 import express from 'express';
 import dotEnv from 'dotenv';
-import authRouter from './routers/auth.router.js';
-import usersRouter from './routers/users.router.js';
-import postsRouter from './routers/posts.router.js';
-import commentsRouter from './routers/comments.router.js';
+import { apiRouter } from './routers/index.router.js';
 import errorHandler from './middlewares/error-handler.middleware.js';
 import refreshTokenMiddleware from './middlewares/refresh-token.middleware.js';
 
@@ -17,12 +14,9 @@ app.get('/', (req, res) => {
   res.send('루트!!');
 });
 
-app.use('/auth', [authRouter]);
-app.use('/users', [usersRouter]);
-app.use('/posts', [postsRouter]);
-app.use('/comments', [commentsRouter]);
- 
-app.use(refreshTokenMiddleware)
+app.use('/api', apiRouter);
+
+app.use(refreshTokenMiddleware);
 
 app.use(errorHandler);
 
