@@ -179,6 +179,7 @@ export const MESSAGES = {
 	USERS: {
 		READ: {
 			SUCCEED: '회원정보 조회에 성공하였습니다.',
+			IS_NOT_EXIST: '잘못된 회원 번호입니다.'
 		},
 		UPDATE: {
 			NAME: {
