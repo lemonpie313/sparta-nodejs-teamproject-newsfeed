@@ -136,5 +136,5 @@ export const MESSAGES = {
   ROLE: {
     FORBIDDEN: '접근 권한이 없습니다.',
     ERROR: '비정상적인 접근입니다.',
-  }
+  },
 };

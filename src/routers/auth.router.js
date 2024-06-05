@@ -94,7 +94,10 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 
 //아티스트 계정 생성 - 관리자 계정으로 들어가서 계정을 만들 수 있음 > 인증 + 역할인가 필요
 router.post(
-  '/sign-up/artists', authMiddleware,  requireRoles([ROLE.ADMIN]), signUpArtistValidator,
+  '/sign-up/artists',
+  authMiddleware,
+  requireRoles([ROLE.ADMIN]),
+  signUpArtistValidator,
   async (req, res, next) => {
     try {
       const {
@@ -263,23 +266,24 @@ const token = async function (payload) {
 router.post('/retoken', refreshTokenMiddleware, async (req, res, next) => {
   try {
     //유저정보 가져오기
-    
-    const user = req.user;
-    console.log(user)
-    const payload = { id: user.userId };
-    console.log("payload에 들은것ㅇㅇㅇ", payload)
 
-    
-    console.log("process.env.ACCESS_TOKEN_SECRET_KEY에 담긴 것ooo", process.env.ACCESS_TOKEN_SECRET_KEY)
-   
+    const user = req.user;
+    console.log(user);
+    const payload = { id: user.userId };
+    console.log('payload에 들은것ㅇㅇㅇ', payload);
+
+    console.log(
+      'process.env.ACCESS_TOKEN_SECRET_KEY에 담긴 것ooo',
+      process.env.ACCESS_TOKEN_SECRET_KEY
+    );
+
     const data = await generateAuthTokens(payload);
 
     return res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
       message: MESSAGES.AUTH.TOKEN.SUCCEED,
       data,
-    })
-    
+    });
   } catch (err) {
     next(err);
   }
@@ -291,13 +295,9 @@ const generateAuthTokens = async (payload) => {
   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET_KEY, {
     expiresIn: '12h',
   });
-  const refreshToken = jwt.sign(
-    payload,
-    process.env.REFRESH_TOKEN_SECRET_KEY,
-    {
-      expiresIn: '7d',
-    }
-  );
+  const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET_KEY, {
+    expiresIn: '7d',
+  });
 
   const refreshTokenHashed = await bcrypt.hash(refreshToken, 10);
 
@@ -314,7 +314,7 @@ const generateAuthTokens = async (payload) => {
     },
   });
   return { accessToken, refreshToken };
-}
+};
 
 //로그아웃
 router.delete('/log-out', refreshTokenMiddleware, async (req, res, next) => {

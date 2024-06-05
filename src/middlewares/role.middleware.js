@@ -24,27 +24,27 @@ const requireRoles = function (requireRole) {
   };
 };
 
-// 특정 역할 제외 
+// 특정 역할 제외
 const exceptRoles = function (requireRole) {
-    return async function (req, res, next) {
-      try {
-        const { UserId, role } = req.user;
-        if (requireRole.includes(role)) {
-          return res.status(HTTP_STATUS.FORBIDDEN).json({
-            status: HTTP_STATUS.FORBIDDEN,
-            message: MESSAGES.ROLE.FORBIDDEN,
-          });
-        }
-  
-        req.user = { UserId, role };
-        return next();
-      } catch (err) {
+  return async function (req, res, next) {
+    try {
+      const { UserId, role } = req.user;
+      if (requireRole.includes(role)) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           status: HTTP_STATUS.FORBIDDEN,
-          message: err.message ?? MESSAGES.ROLE.ERROR,
+          message: MESSAGES.ROLE.FORBIDDEN,
         });
       }
-    };
+
+      req.user = { UserId, role };
+      return next();
+    } catch (err) {
+      return res.status(HTTP_STATUS.FORBIDDEN).json({
+        status: HTTP_STATUS.FORBIDDEN,
+        message: err.message ?? MESSAGES.ROLE.ERROR,
+      });
+    }
   };
+};
 
 export { requireRoles, exceptRoles };
