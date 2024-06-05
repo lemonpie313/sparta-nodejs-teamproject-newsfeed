@@ -73,6 +73,8 @@ export const MESSAGES = {
     FOLLOW: {
 			FOLLOW_SUCCEED: '팔로우 했습니다.',
 			IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
+      SELF_IMPOSSIBLE: '자기 자신은 팔로우 할 수 없습니다.',
+      IMPOSSIBLE: '팔로우 할 수 없는 계정입니다.',
 			UNFOLLOW_SUCCEED: '언팔로우 했습니다.'
 		}
   },
