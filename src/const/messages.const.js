@@ -74,8 +74,10 @@ export const MESSAGES = {
 		FOLLOW: {
 			FOLLOW_SUCCEED: '팔로우 했습니다.',
 			IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
-			UNFOLLOW_SUCCEED: '언팔로우 했습니다.'
-		}
+			SELF_IMPOSSIBLE: '자기 자신은 팔로우 할 수 없습니다.',
+			IMPOSSIBLE: '팔로우 할 수 없는 계정입니다.',
+			UNFOLLOW_SUCCEED: '언팔로우 했습니다.',
+		},
 	},
 	POSTS: {
 		CREATE: {
@@ -135,6 +137,7 @@ export const MESSAGES = {
 			LIKE_CANCEL: '좋아요 취소가 반영되었습니다.',
 			NO_POST: '해당 게시글이 존재하지 않습니다.',
 			NO_COMMENTS: '해당 댓글이 존재하지 않습니다.',
+			NOT_AVAILABLE: '본인의 댓글에는 좋아요를 누를 수 없습니다.',
 		},
 	},
 	JWT: {

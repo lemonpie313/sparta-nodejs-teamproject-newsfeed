@@ -14,8 +14,9 @@ import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-//게시물 작성 -- 관리자는 접근 권한 X
+//게시물 작성 -- 관리자는 접근 권한 X, 리팩토링 완료(그룹 교차 X)
 router.post(
+
 	'/:group',
 	authMiddleware,
 	exceptRoles([ROLE.ADMIN]),
@@ -24,7 +25,7 @@ router.post(
 		try {
 			const { postContent, postPicture } = req.body;
 			const { group } = req.params;
-			const { UserId } = req.user;
+			const { UserId, role } = req.user;
 
 			// 이미지가 유효한지 (jpg, png 등...)
 			if (postPicture) {
@@ -40,8 +41,12 @@ router.post(
 				});
 			}
 
+
 			//그룹 이름 검사
-			if (!Object.values(GROUP).includes(group)) {
+			if (
+				!Object.values(GROUP).includes(group) ||
+				(role != ROLE.FAN && role != group)
+			) {
 				return res.status(HTTP_STATUS.NOT_FOUND).json({
 					status: HTTP_STATUS.NOT_FOUND,
 					message: MESSAGES.POSTS.CREATE.GROUP.INVALID,
@@ -291,7 +296,7 @@ router.patch(
 );
 
 // 게시물 상세 조회
-router.get('/:postId', authMiddleware, async (req, res, next) => {
+router.get('/detail/:postId', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. postId 받아오기
 		const { postId } = req.params;
@@ -689,5 +694,76 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 		next(err);
 	}
 });
+
+// 팔로우한 게시물 피드 - 구현 완료
+router.get(
+	'/following',
+	authMiddleware,
+	exceptRoles([ROLE.ADMIN]),
+	async (req, res, get) => {
+		const { UserId } = req.user;
+
+		const follow = await prisma.followers.findMany({
+			where: {
+				FollowerUserId: UserId,
+			},
+			select: {
+				Followings: {
+					select: {
+						FollowingUserId: true,
+					},
+				},
+			},
+		});
+		const followId = follow.map((cur) => cur.Followings.FollowingUserId);
+
+		const followPosts = await prisma.posts.findMany({
+			where: {
+				UserId: {
+					in: followId,
+				},
+			},
+			select: {
+				postId: true,
+				PostPictures: {
+					select: {
+						picture: true,
+						createdAt: true,
+						updatedAt: true,
+					},
+				},
+				group: true,
+				postContent: true,
+				createdAt: true,
+				updatedAt: true,
+				UserId: false,
+				User: {
+					select: {
+						UserInfos: {
+							select: {
+								nickname: true,
+							},
+						},
+					},
+				},
+				_count: {
+					select: {
+						LikePosts: true,
+					},
+				},
+			},
+			orderBy: {
+				createdAt: 'desc',
+			},
+		});
+
+		console.log(followId);
+		return res.status(HTTP_STATUS.OK).json({
+			status: HTTP_STATUS.OK,
+			message: 'goooood',
+			data: followPosts,
+		});
+	}
+);
 
 export default router;

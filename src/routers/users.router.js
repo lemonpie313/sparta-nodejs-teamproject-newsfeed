@@ -8,6 +8,9 @@ import {
 	passwordUpdateValidator,
 } from '../middlewares/joi/users.joi.middleware.js';
 import bcrypt from 'bcrypt';
+import { Prisma } from '@prisma/client';
+import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
+import { ROLE } from '../const/role.const.js';
 
 const router = express.Router();
 
@@ -241,69 +244,109 @@ router.patch(
 		}
 	}
 );
-// 팔로우 하기 
-router.patch('/follow/:userId', authMiddleware, async (req, res, next) => {
-	try {
-		// 1. 팔로우 할 아이디(상대) 가져오기
-		const { userId } = req.params;
-		// 1-1. 팔로우 할려고 하는 사람(자신)의 ID 가져오기
-		const { UserId } = req.user;
+// 팔로우 하기 -- 리팩토링함(schema 바뀜...)
+router.patch(
+	'/follow/:userId',
+	authMiddleware,
+	requireRoles([ROLE.FAN]),
+	async (req, res, next) => {
+		try {
+			// 1. 팔로우 할 아이디(상대) 가져오기
+			const { userId } = req.params;
+			// 1-1. 팔로우 할려고 하는 사람(자신)의 ID 가져오기
+			const { UserId } = req.user;
 
-		// 2. 팔로우 할 유저가 있는지 조회
-		const follower = await prisma.users.findFirst({
-			where: {
-				userId: +userId
-			},
-		});
-
-		// 3. 오류 처리
-		if (!follower) {
-			return res.status(HTTP_STATUS.NOT_FOUND).json({
-				status: HTTP_STATUS.NOT_FOUND,
-				message: MESSAGES.USERS.FOLLOW.IS_NOT_EXIST
-			});
-		}
-		// 4. 팔로우가 되어있는지 확인
-		const AlreadyFollowing = await prisma.follows.findFirst({
-			where: {
-				followerId: UserId,
-				followingId: +userId
-			},
-			select: {
-				followsId: true
+			if (UserId == +userId) {
+				return res.status(HTTP_STATUS.BAD_REQUEST).json({
+					status: HTTP_STATUS.BAD_REQUEST,
+					message: MESSAGES.USERS.FOLLOW.SELF_IMPOSSIBLE,
+				});
 			}
-		});
+			if (+userId == 1) {
+				return res.status(HTTP_STATUS.BAD_REQUEST).json({
+					status: HTTP_STATUS.BAD_REQUEST,
+					message: MESSAGES.USERS.FOLLOW.IMPOSSIBLE,
+				});
+			}
 
-		// 4-1. 이미 있다면 삭제
-		if (AlreadyFollowing) {
-			await prisma.follows.delete({
+			// 2. 팔로우 할 유저가 있는지 조회
+			const follower = await prisma.users.findFirst({
 				where: {
-					followsId: AlreadyFollowing.followsId
-				}
+					userId: +userId,
+				},
 			});
 
+			// 3. 오류 처리
+			if (!follower) {
+				return res.status(HTTP_STATUS.NOT_FOUND).json({
+					status: HTTP_STATUS.NOT_FOUND,
+					message: MESSAGES.USERS.FOLLOW.IS_NOT_EXIST,
+				});
+			}
+			// 4. 팔로우가 되어있는지 확인
+			const AlreadyFollowing = await prisma.followers.findFirst({
+				where: {
+					FollowerUserId: UserId,
+					Followings: {
+						FollowingUserId: +userId,
+					},
+				},
+				select: {
+					followerId: true,
+					FollowerUserId: true,
+				},
+			});
+
+			// 4-1. 이미 있다면 삭제
+			if (AlreadyFollowing) {
+				await prisma.$transaction(
+					async (tx) => {
+						await tx.followers.delete({
+							where: {
+								followerId: AlreadyFollowing.followerId,
+							},
+						});
+					},
+					{
+						isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+					}
+				);
+
+				return res.status(HTTP_STATUS.OK).json({
+					status: HTTP_STATUS.OK,
+					message: MESSAGES.USERS.FOLLOW.UNFOLLOW_SUCCEED,
+				});
+			}
+
+			// 5. following 데이터베이스에 추가
+			await prisma.$transaction(
+				async (tx) => {
+					const following = await tx.followers.create({
+						data: {
+							FollowerUserId: UserId,
+						},
+					});
+					await tx.followings.create({
+						data: {
+							FollowerId: following.followerId,
+							FollowingUserId: +userId,
+						},
+					});
+				},
+				{
+					isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+				}
+			);
+
+			// 성공 처리 반환
 			return res.status(HTTP_STATUS.OK).json({
 				status: HTTP_STATUS.OK,
-				message: MESSAGES.USERS.FOLLOW.UNFOLLOW_SUCCEED
+				message: MESSAGES.USERS.FOLLOW.FOLLOW_SUCCEED,
 			});
+		} catch (err) {
+			next(err);
 		}
-		// 5. following 데이터베이스에 추가
-		await prisma.follows.create({
-			data: {
-				followerId: UserId,
-				followingId: +userId
-			}
-		});
-
-		// 성공 처리 반환
-		return res.status(HTTP_STATUS.OK).json({
-			status: HTTP_STATUS.OK,
-			message: MESSAGES.USERS.FOLLOW.FOLLOW_SUCCEED
-		});
-
-	} catch (err) {
-		next(err);
 	}
-});
+);
 
 export default router;
