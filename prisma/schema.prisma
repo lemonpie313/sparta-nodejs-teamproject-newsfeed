@@ -26,7 +26,8 @@ model Users {
     RefreshToken RefreshToken?
     Posts        Posts[]
     Comments     Comments[]
-    Follows      Follows[]
+    Followings   Followings[]
+    Followers    Followers[]
 
     @@map("users")
 }
@@ -134,12 +135,35 @@ model LikeComments {
     UserInfo UserInfos @relation(fields: [UserInfoId], references: [userInfoId], onDelete: Cascade)
 }
 
-model Follows {
-    followsId   Int @id @default(autoincrement()) @map("followers_id")
-    followerId  Int @map("follower_id")
-    followingId Int @map("following_id")
+// model Follows {
+//     followsId   Int @id @default(autoincrement()) @map("followers_id")
+//     followerId  Int @map("follower_id")
+//     followingId Int @map("following_id")
 
-    User Users @relation(fields: [followerId], references: [userId], onDelete: Cascade)
+//     User Users @relation(fields: [followerId], references: [userId], onDelete: Cascade)
 
-    @@map("follows")
+//     @@map("follows")
+// }
+
+model Followings {
+    followingId     Int      @id @default(autoincrement()) @map("following_id")
+    FollowingUserId Int      @map("following_user_id")
+    createdAt       DateTime @default(now()) @map("created_at")
+
+    User      Users      @relation(fields: [FollowingUserId], references: [userId], onDelete: Cascade)
+    Followers Followers?
+
+    @@map("followings")
+}
+
+model Followers {
+    followerId     Int      @id @default(autoincrement()) @map("follower_id")
+    FollowingId    Int      @unique @map("following_id")
+    FollowerUserId Int      @map("follower_user_id")
+    createdAt      DateTime @default(now()) @map("created_at")
+
+    User       Users      @relation(fields: [FollowerUserId], references: [userId], onDelete: Cascade)
+    Followings Followings @relation(fields: [FollowingId], references: [followingId])
+
+    @@map("followers")
 }
