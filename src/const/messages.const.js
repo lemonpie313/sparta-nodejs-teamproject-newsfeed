@@ -136,6 +136,7 @@ export const MESSAGES = {
       LIKE_CANCEL: '좋아요 취소가 반영되었습니다.',
       NO_POST: '해당 게시글이 존재하지 않습니다.',
       NO_COMMENTS: '해당 댓글이 존재하지 않습니다.',
+      NOT_AVAILABLE: '본인의 댓글에는 좋아요를 누를 수 없습니다.',
     },
   },
   JWT: {
