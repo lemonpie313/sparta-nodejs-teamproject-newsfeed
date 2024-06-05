@@ -29,6 +29,10 @@ export const MESSAGES = {
       SUCCEED: '회원가입에 성공했습니다.',
     },
     SIGN_UP_ARTIST: {
+      ARTIST_ID: {
+        REQUIRED: '아티스트 아이디 값을 입력해주세요.',
+        IS_NOT_EXIST: '해당 그룹이 존재하지 않습니다.',
+      },
       NOT_AVAILABLE: '회원가입을 할 수 없습니다.',
       SUCCEED: '아티스트 계정 생성에 성공했습니다.',
     },

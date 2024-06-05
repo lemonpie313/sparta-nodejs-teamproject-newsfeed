@@ -9,10 +9,10 @@ const requireRoles = function (requireRole) {
       const { UserId, Role } = req.user;
       const role = await prisma.groups.findMany({
         where: {
-            groupName: {
-                in: requireRole,
-            },
-        }
+          groupName: {
+            in: requireRole,
+          },
+        },
       });
       const requireId = role.map((cur) => cur.groupId);
       if (!requireId.includes(Role)) {
@@ -40,10 +40,10 @@ const exceptRoles = function (requireRole) {
       const { UserId, Role } = req.user;
       const role = await prisma.groups.findMany({
         where: {
-            groupName: {
-                in: requireRole,
-            },
-        }
+          groupName: {
+            in: requireRole,
+          },
+        },
       });
       const requireId = role.map((cur) => cur.groupId);
       if (requireId.includes(Role)) {

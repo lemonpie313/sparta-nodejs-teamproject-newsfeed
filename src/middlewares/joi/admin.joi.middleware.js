@@ -19,12 +19,12 @@ const initSchema = Joi.object({
 });
 
 const initValidator = async (req, res, next) => {
-    try {
-      await initSchema.validateAsync(req.body);
-      next();
-    } catch (error) {
-      next(error);
-    }
-  };
+  try {
+    await initSchema.validateAsync(req.body);
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
 
-  export { initValidator };
+export { initValidator };

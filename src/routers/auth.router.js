@@ -46,7 +46,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
     const group = await prisma.groups.findFirst({
       where: {
         groupName: ROLE.FAN,
-      }
+      },
     });
 
     const userInfo = await prisma.$transaction(
@@ -80,7 +80,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
             updatedAt: true,
           },
         });
-        
+
         return { ...user, ...userInfo };
       },
       {
@@ -132,13 +132,13 @@ router.post(
 
       const group = await prisma.groups.findFirst({
         where: {
-          groupName: artistId,
-        }
-      })
+          groupId: artistId,
+        },
+      });
       if (!group) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({
           status: HTTP_STATUS.NOT_FOUND,
-          message: '그룹없음',
+          message: MESSAGES.AUTH.SIGN_UP_ARTIST.ARTIST_ID.IS_NOT_EXIST,
         });
       }
 

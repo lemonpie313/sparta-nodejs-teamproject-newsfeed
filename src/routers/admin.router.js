@@ -22,15 +22,15 @@ router.post('/init', initValidator, async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const group = await prisma.groups.findFirst({
-        where: {
-            groupName: ROLE.ADMIN
-        }
+      where: {
+        groupName: ROLE.ADMIN,
+      },
     });
     if (group) {
-        return res.status(HTTP_STATUS.CONFLICT).json({
-            status: HTTP_STATUS.CONFLICT,
-            message: '불가능',
-          });
+      return res.status(HTTP_STATUS.CONFLICT).json({
+        status: HTTP_STATUS.CONFLICT,
+        message: '불가능',
+      });
     }
     const userInfo = await prisma.$transaction(
       async (tx) => {
@@ -93,40 +93,42 @@ router.post('/init', initValidator, async (req, res, next) => {
 });
 
 //그룹 추가 기능
-router.post('/group', authMiddleware, requireRoles([ROLE.ADMIN]), async (req, res, next) => {
-  try {
-    const { groupName, numOfMembers } = req.body;
-    
-    const group = await prisma.groups.findFirst({
-      where: {
-        groupName,
-      }
-    });
-    if (group) {
-      return res.status(HTTP_STATUS.CREATED).json({
-        status: HTTP_STATUS.CONFLICT,
-        message: 'already',
-      });
-    }
+router.post(
+  '/group',
+  authMiddleware,
+  requireRoles([ROLE.ADMIN]),
+  async (req, res, next) => {
+    try {
+      const { groupName, numOfMembers } = req.body;
 
-    const newGroup = await prisma.groups.create({
-      data: {
-        groupName,
-        numOfMembers,
+      const group = await prisma.groups.findFirst({
+        where: {
+          groupName,
+        },
+      });
+      if (group) {
+        return res.status(HTTP_STATUS.CREATED).json({
+          status: HTTP_STATUS.CONFLICT,
+          message: 'already',
+        });
       }
-    })
+
+      const newGroup = await prisma.groups.create({
+        data: {
+          groupName,
+          numOfMembers,
+        },
+      });
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
         message: 'good',
         data: newGroup,
       });
-  } catch (err) {
-    next(err);
+    } catch (err) {
+      next(err);
+    }
   }
-  
-  
-  
-});
+);
 
 export default router;

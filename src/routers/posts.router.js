@@ -44,16 +44,16 @@ router.post(
       const group = await prisma.groups.findFirst({
         where: {
           groupId: +groupId,
-        }
+        },
       });
       const role = await prisma.groups.findFirst({
         where: {
           groupId: Role,
-        }
+        },
       });
       if (
         !group ||
-        (role.groupName!=ROLE.FAN && role.groupName!=group.groupName)
+        (role.groupName != ROLE.FAN && role.groupName != group.groupName)
       ) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({
           status: HTTP_STATUS.NOT_FOUND,
@@ -542,13 +542,13 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
     const groupName = await prisma.groups.findFirst({
       where: {
         groupId: +group,
-      }
+      },
     });
     const role = await prisma.groups.findFirst({
       where: {
         groupName: ROLE.FAN,
-      }
-    })
+      },
+    });
 
     // 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
     const post = await prisma.posts.findMany({
@@ -620,7 +620,7 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
     const groupName = await prisma.groups.findFirst({
       where: {
         groupId: +group,
-      }
+      },
     });
 
     // 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
