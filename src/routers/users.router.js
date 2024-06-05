@@ -252,7 +252,7 @@ router.patch('/follow/:userId', authMiddleware, async (req, res, next) => {
 		if (!follower) {
 			return res.status(HTTP_STATUS.NOT_FOUND).json({
 				status: HTTP_STATUS.NOT_FOUND,
-				message: '안돼 돌아가'
+				message: MESSAGES.USERS.FOLLOW.IS_NOT_EXIST
 			});
 		}
 		// 4. 팔로우가 되어있는지 확인
@@ -274,9 +274,9 @@ router.patch('/follow/:userId', authMiddleware, async (req, res, next) => {
 				}
 			});
 
-			return res.status(200).json({
-				status: 200,
-				message: '언팔로우 했습니다.'
+			return res.status(HTTP_STATUS.OK).json({
+				status: HTTP_STATUS.OK,
+				message: MESSAGES.USERS.FOLLOW.UNFOLLOW_SUCCEED
 			});
 		}
 		// 5. following 데이터베이스에 추가
@@ -290,7 +290,7 @@ router.patch('/follow/:userId', authMiddleware, async (req, res, next) => {
 		// 성공 처리 반환
 		return res.status(HTTP_STATUS.OK).json({
 			status: HTTP_STATUS.OK,
-			message: MESSAGES.USERS.UPDATE.FOLLOW.SUCCEED,
+			message: MESSAGES.USERS.FOLLOW.FOLLOW_SUCCEED
 		});
 
 	} catch (err) {

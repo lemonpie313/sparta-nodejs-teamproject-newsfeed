@@ -203,10 +203,12 @@ export const MESSAGES = {
 			IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
 			PW_NOT_MATCHED: '비밀번호가 일치하지 않습니다.',
 			SUCCEED: '회원정보 수정이 완료되었습니다.',
-			FOLLOW: {
-				SUCCEED: '팔로우에 성공했습니다.'
-			}
 		},
+		FOLLOW: {
+			FOLLOW_SUCCEED: '팔로우 했습니다.',
+			IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
+			UNFOLLOW_SUCCEED: '언팔로우 했습니다.'
+		}
 
 	},
 	POSTS: {
