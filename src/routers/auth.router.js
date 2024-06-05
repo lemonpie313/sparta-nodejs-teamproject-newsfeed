@@ -183,7 +183,7 @@ router.post(
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
-        message: MESSAGES.AUTH.SIGN_UP.SUCCEED,
+        message: MESSAGES.AUTH.SIGN_UP_ARTIST.SUCCEED,
         data: { userInfo },
       });
     } catch (err) {

@@ -30,6 +30,7 @@ export const MESSAGES = {
     },
     SIGN_UP_ARTIST: {
       NOT_AVAILABLE: '회원가입을 할 수 없습니다.',
+      SUCCEED: '아티스트 계정 생성에 성공했습니다.',
     },
     SIGN_IN: {
       IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
@@ -69,6 +70,11 @@ export const MESSAGES = {
       NEW_PW_NOT_MATCHED: '새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.',
       SAME_PASSWORD: '기존 비밀번호는 새 비밀번호로 등록이 불가능합니다.',
     },
+    FOLLOW: {
+			FOLLOW_SUCCEED: '팔로우 했습니다.',
+			IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
+			UNFOLLOW_SUCCEED: '언팔로우 했습니다.'
+		}
   },
   POSTS: {
     CREATE: {
