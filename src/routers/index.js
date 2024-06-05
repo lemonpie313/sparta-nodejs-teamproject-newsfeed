@@ -2,7 +2,7 @@ import express from 'express';
 import * as authRouter from './auth.router.js';
 import * as commentsRouter from './comments.router.js';
 import * as postsRouter from './posts.router.js';
-import * as usersRouter from './users.router.js'
+import * as usersRouter from './users.router.js';
 
 const apiRouter = express.Router();
 
@@ -10,7 +10,6 @@ apiRouter.use('/auth', [authRouter]);
 apiRouter.use('/users', [usersRouter]);
 apiRouter.use('/posts', [postsRouter]);
 apiRouter.use('/comments', [commentsRouter]);
-
 
 export { apiRouter };
 
