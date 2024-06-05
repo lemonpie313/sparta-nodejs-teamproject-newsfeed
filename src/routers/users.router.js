@@ -113,7 +113,15 @@ router.patch(
 router.get('/:userInfoId', authMiddleware, async (req, res, next) => {
 	// 1. userInfoId 받아오기
 	const { userInfoId } = req.params;
-	console.log(userInfoId);
+	const { UserId } = req.user;
+
+	// 1-1. 관리자 프로필에 접근 못하게 하기
+	if (+userInfoId === 1 && UserId !== 1) {
+		return res.status(HTTP_STATUS.FORBIDDEN).json({
+			status: HTTP_STATUS.FORBIDDEN,
+			message: MESSAGES.USERS.READ.INACCESSIBLE
+		});
+	}
 
 	// 2. 테이블에서 해당 조건 값 가져오기
 	const profile = await prisma.userInfos.findUnique({
