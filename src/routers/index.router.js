@@ -12,7 +12,7 @@ apiRouter.use('/auth', [authRouter]);
 apiRouter.use('/users', [usersRouter]);
 apiRouter.use('/posts', [postsRouter]);
 apiRouter.use('/comments', [commentsRouter]);
-apiRouter.use('/multimedia', [multimediaRouter]);
 apiRouter.use('/admin', [adminRouter]);
+apiRouter.use('/multimedia', [multimediaRouter]);
 
 export { apiRouter };
