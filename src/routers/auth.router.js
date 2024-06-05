@@ -18,7 +18,7 @@ import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-//회원가입 - 일반
+//회원가입 - 일반 - 리팩토링중..
 router.post('/sign-up', signUpValidator, async (req, res, next) => {
   try {
     const {
@@ -30,7 +30,6 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
       profilePicture,
     } = req.body;
     const isExistEmail = await prisma.users.findFirst({
-      //db의 이메일:body의 이메일
       where: {
         email,
       },
@@ -43,6 +42,12 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    const group = await prisma.groups.findFirst({
+      where: {
+        groupName: ROLE.FAN,
+      }
+    });
 
     const userInfo = await prisma.$transaction(
       async (tx) => {
@@ -61,13 +66,13 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
             UserId: user.userId,
             name,
             nickname,
-            role: user.userId == 1 ? ROLE.ADMIN : ROLE.FAN,
+            Role: group.groupId,
             selfIntroduction,
             profilePicture: profilePicture ?? 'image.jpg',
           },
           select: {
             name: true,
-            role: true,
+            Role: true,
             nickname: true,
             selfIntroduction: true,
             profilePicture: true,
@@ -75,6 +80,7 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
             updatedAt: true,
           },
         });
+        
         return { ...user, ...userInfo };
       },
       {
@@ -122,26 +128,19 @@ router.post(
         });
       }
 
-      let artist;
-      switch (artistId) {
-        case ARTIST_ID.MONSTAX:
-          artist = ROLE.MONSTAX;
-          break;
-        case ARTIST_ID.WJSN:
-          artist = ROLE.WJSN;
-          break;
-        case ARTIST_ID.CRAVITY:
-          artist = ROLE.CRAVITY;
-          break;
-        case ARTIST_ID.IVE:
-          artist = ROLE.IVE;
-        default:
-          return res.status(HTTP_STATUS.FORBIDDEN).json({
-            status: HTTP_STATUS.FORBIDDEN,
-            message: MESSAGES.AUTH.SIGN_UP_ARTIST.NOT_AVAILABLE,
-          });
-      }
       const hashedPassword = await bcrypt.hash(password, 10);
+
+      const group = await prisma.groups.findFirst({
+        where: {
+          groupName: artistId,
+        }
+      })
+      if (!group) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          status: HTTP_STATUS.NOT_FOUND,
+          message: '그룹없음',
+        });
+      }
 
       const userInfo = await prisma.$transaction(
         async (tx) => {
@@ -160,13 +159,13 @@ router.post(
               UserId: user.userId,
               name,
               nickname,
-              role: artist,
+              Role: group.groupId,
               selfIntroduction,
               profilePicture: profilePicture ?? 'image.jpg',
             },
             select: {
               name: true,
-              role: true,
+              Role: true,
               nickname: true,
               selfIntroduction: true,
               profilePicture: true,

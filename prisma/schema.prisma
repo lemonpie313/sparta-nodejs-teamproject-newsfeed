@@ -7,11 +7,16 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-enum Group {
-    MONSTAX
-    WJSN
-    CRAVITY
-    IVE
+model Groups {
+    groupId      Int      @id @default(autoincrement()) @map("group_id")
+    groupName    String   @unique @map("group_name")
+    numOfMembers Int      @map("num_of_members")
+    createdAt    DateTime @default(now()) @map("created_at")
+
+    UserInfos UserInfos[]
+    Posts     Posts[]
+
+    @@map("groups")
 }
 
 model Users {
@@ -36,7 +41,7 @@ model UserInfos {
     userInfoId Int @id @default(autoincrement()) @map("user_info_id")
     UserId     Int @unique @map("user_id")
 
-    role             String  @default("FAN") @map("role")
+    Role             Int     @map("role")
     name             String  @map("name")
     nickname         String  @map("nickname")
     selfIntroduction String  @map("self_introduction") @db.Text
@@ -46,6 +51,7 @@ model UserInfos {
     updatedAt DateTime @updatedAt @map("updated_at")
 
     User         Users          @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+    Groups       Groups         @relation(fields: [Role], references: [groupId], onDelete: Cascade)
     LikePosts    LikePosts[]
     LikeComments LikeComments[]
 
@@ -66,9 +72,9 @@ model RefreshToken {
 }
 
 model Posts {
-    postId Int   @id @default(autoincrement()) @map("post_id")
-    UserId Int   @map("user_id")
-    group  Group @map("group")
+    postId Int @id @default(autoincrement()) @map("post_id")
+    UserId Int @map("user_id")
+    Group  Int @map("group")
 
     postContent String @map("self_introduction") @db.Text
 
@@ -76,6 +82,7 @@ model Posts {
     updatedAt DateTime @updatedAt @map("updated_at")
 
     User         Users          @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+    Groups       Groups         @relation(fields: [Group], references: [groupId], onDelete: Cascade)
     LikePosts    LikePosts[]
     Comments     Comments[]
     PostPictures PostPictures[]

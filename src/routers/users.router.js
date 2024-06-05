@@ -112,7 +112,7 @@ router.patch(
     }
   }
 );
-// 다른 사람 프로필 조회
+// 다른 사람 프로필 조회 -- 리팩토링 (Role, Group 대문자..)
 router.get('/:userInfoId', authMiddleware, async (req, res, next) => {
   // 1. userInfoId 받아오기
   const { userInfoId } = req.params;
@@ -125,7 +125,7 @@ router.get('/:userInfoId', authMiddleware, async (req, res, next) => {
     },
     select: {
       userInfoId: true,
-      role: true,
+      Role: true,
       nickname: true,
       selfIntroduction: true,
       profilePicture: true,
@@ -137,7 +137,7 @@ router.get('/:userInfoId', authMiddleware, async (req, res, next) => {
             select: {
               postId: true,
               postContent: true,
-              group: true,
+              Group: true,
             },
           },
         },
