@@ -192,8 +192,8 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
     const { UserId } = req.user;
     // 1-2. 그리고 이 댓글의 id가 무엇인가? req.params에서 가져와!
     const { commentId } = req.params;
-    // 1-3. 이 댓글이 어느 글에 달려있는 것인지 Post_id도 가져와!
-    const { PostId } = await prisma.comments.findFirst({
+    // 1-3. 이 댓글이 뭔지 가져와봐
+    const comment = await prisma.comments.findFirst({
       where: {
         commentId: +commentId,
       },
@@ -201,12 +201,13 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
 
     // 2. 이 API가 실행될 최소조건을 갖추었는지 검사
     // 2-1. 해당 댓글이 달린 게시글이 존재하는지 먼저 검사
-    if (!PostId) {
+    if (!comment.PostId) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         status: HTTP_STATUS.NOT_FOUND,
         message: MESSAGES.COMMENTS.LIKE.NO_POST,
       });
     }
+    const PostId = comment.PostId;
     // 2-2. 해당 댓글이 존재하는지 먼저 검사
     if (!commentId) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
@@ -224,6 +225,19 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
     });
     if (!checkLikeComment) {
       // 3-A1. 만약 없다면 좋아요 추가하는 로직 실행
+      // 3-A2. 혹시 내가 쓴 댓글인지 확인
+      const post = await prisma.Posts.findFirst({
+        where: {
+          postId: +PostId,
+        },
+      });
+      // 만약 내가 쓴 댓글이면 "본인의 댓글에는 좋아요를 누를 수 없습니다."
+      if (+UserId == +post.UserId) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: MESSAGES.COMMENTS.LIKE.NOT_AVAILABLE,
+        });
+      }
       // like_comments 테이블에 데이터 생성!
       await prisma.LikeComments.create({
         data: {
@@ -231,15 +245,15 @@ router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
           CommentId: +commentId,
         },
       });
-      // 3-A2. 좋아요 추가 결과를 클라이언트에 반환
-      // 3-A2-1. 일단 지금 좋아요 총 수를 계산
+      // 3-A3. 좋아요 추가 결과를 클라이언트에 반환
+      // 3-A3-1. 일단 지금 좋아요 총 수를 계산
       const likePeople = await prisma.LikeComments.findMany({
         where: {
           CommentId: +commentId,
         },
       });
       const likes = likePeople.length;
-      // 3-A2-2. 결과 총 정리해서 클라이언트에게 반환
+      // 3-A3-2. 결과 총 정리해서 클라이언트에게 반환
       return res.status(HTTP_STATUS.OK).json({
         status: HTTP_STATUS.OK,
         message: MESSAGES.COMMENTS.LIKE.LIKE,
