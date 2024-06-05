@@ -10,13 +10,15 @@ import {
 import { GROUP } from '../const/group.const.js';
 import { ROLE } from '../const/role.const.js';
 import { Prisma } from '@prisma/client';
+import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-//게시물 작성 -- 리팩토링 완료
+//게시물 작성 -- 관리자는 접근 권한 X
 router.post(
   '/:group',
   authMiddleware,
+  exceptRoles([ROLE.ADMIN]),
   postValidator,
   async (req, res, next) => {
     try {
@@ -115,59 +117,64 @@ router.post(
   }
 );
 
-// 내 게시물 목록 조회
-router.get('/me', authMiddleware, async (req, res, next) => {
-  try {
-    // 1. 받아온 req.user에서 userId 가져온다.
-    const { UserId } = req.user;
+// 내 게시물 목록 조회 -- 관리자는 접근 권한 X
+router.get(
+  '/me',
+  authMiddleware,
+  exceptRoles([ROLE.ADMIN]),
+  async (req, res, next) => {
+    try {
+      // 1. 받아온 req.user에서 userId 가져온다.
+      const { UserId } = req.user;
 
-    // 2. 로그인한 사용자의 게시물 목록만 조회한다.
-    const posts = await prisma.posts.findMany({
-      where: {
-        UserId,
-      },
-      select: {
-        postId: true,
-        UserId: true,
-        User: {
-          select: {
-            UserInfos: {
-              select: {
-                nickname: true,
+      // 2. 로그인한 사용자의 게시물 목록만 조회한다.
+      const posts = await prisma.posts.findMany({
+        where: {
+          UserId,
+        },
+        select: {
+          postId: true,
+          UserId: true,
+          User: {
+            select: {
+              UserInfos: {
+                select: {
+                  nickname: true,
+                },
               },
             },
           },
-        },
-        PostPictures: {
-          select: {
-            picture: true,
+          PostPictures: {
+            select: {
+              picture: true,
+            },
           },
-        },
-        postContent: true,
-        _count: {
-          select: {
-            LikePosts: true,
+          postContent: true,
+          _count: {
+            select: {
+              LikePosts: true,
+            },
           },
+          createdAt: true,
+          updatedAt: true,
         },
-        createdAt: true,
-        updatedAt: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-    // 3. 결과 반환한다.
-    return res.status(HTTP_STATUS.OK).json({
-      status: HTTP_STATUS.OK,
-      message: MESSAGES.POSTS.READ.SUCCEED,
-      data: posts,
-    });
-  } catch (err) {
-    next(err);
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+      // 3. 결과 반환한다.
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        message: MESSAGES.POSTS.READ.SUCCEED,
+        data: posts,
+      });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
-// 게시물 수정 -- 리팩토링 완료
+// 게시물 수정
 router.patch(
   '/:postId',
   authMiddleware,
@@ -283,7 +290,7 @@ router.patch(
   }
 );
 
-// 게시물 상세 조회 -- 리팩토링 완료
+// 게시물 상세 조회
 router.get('/:postId', authMiddleware, async (req, res, next) => {
   try {
     // 1. postId 받아오기
@@ -389,124 +396,129 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
   }
 });
 
-// 게시물 좋아요 - 리팩토링 완료
-router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
-  try {
-    const { postId } = req.params;
-    const { UserId } = req.user;
+// 게시물 좋아요 -- 관리자는 접근 권한 X
+router.patch(
+  '/like/:postId',
+  authMiddleware,
+  exceptRoles([ROLE.ADMIN]),
+  async (req, res, next) => {
+    try {
+      const { postId } = req.params;
+      const { UserId } = req.user;
 
-    //게시물 찾기
-    const likepost = await prisma.posts.findFirst({
-      where: {
-        postId: +postId,
-      },
-      select: {
-        UserId: true,
-        postId: true,
-        postContent: true,
-      },
-    });
-
-    if (!likepost) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        status: HTTP_STATUS.NOT_FOUND,
-        message: MESSAGES.POSTS.LIKES.IS_NOT_EXIST,
-      });
-    }
-    if (likepost.UserId == UserId) {
-      return res.status(HTTP_STATUS.FORBIDDEN).json({
-        status: HTTP_STATUS.FORBIDDEN,
-        message: MESSAGES.POSTS.LIKES.NOT_AVAILABLE,
-      });
-    }
-
-    //좋아요 목록, 좋아요 개수
-    const like = await prisma.likePosts.findMany({
-      where: {
-        PostId: +postId,
-      },
-    });
-    let likes = like.length;
-
-    //사용자가 누른 좋아요 데이터
-    const myInfo = await prisma.userInfos.findFirst({
-      where: {
-        UserId,
-      },
-      select: {
-        userInfoId: true,
-      },
-    });
-    const likedIt = like.find((cur) => cur.UserInfoId == myInfo.userInfoId);
-
-    if (likedIt) {
-      await prisma.likePosts.delete({
+      //게시물 찾기
+      const likepost = await prisma.posts.findFirst({
         where: {
-          likePostId: likedIt.likePostId,
+          postId: +postId,
+        },
+        select: {
+          UserId: true,
+          postId: true,
+          postContent: true,
         },
       });
-      likes -= 1;
-    } else {
-      await prisma.likePosts.create({
-        data: {
-          UserInfoId: myInfo.userInfoId,
+
+      if (!likepost) {
+        return res.status(HTTP_STATUS.NOT_FOUND).json({
+          status: HTTP_STATUS.NOT_FOUND,
+          message: MESSAGES.POSTS.LIKES.IS_NOT_EXIST,
+        });
+      }
+      if (likepost.UserId == UserId) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({
+          status: HTTP_STATUS.FORBIDDEN,
+          message: MESSAGES.POSTS.LIKES.NOT_AVAILABLE,
+        });
+      }
+
+      //좋아요 목록, 좋아요 개수
+      const like = await prisma.likePosts.findMany({
+        where: {
           PostId: +postId,
         },
       });
-      likes += 1;
-    }
+      let likes = like.length;
 
-    const post = await prisma.posts.findUnique({
-      where: {
-        postId: +postId,
-      },
-      select: {
-        postId: true,
-        postContent: true,
-        createdAt: true,
-        updatedAt: true,
-        PostPictures: {
-          select: {
-            picture: true,
-            createdAt: true,
-            updatedAt: true,
-          },
+      //사용자가 누른 좋아요 데이터
+      const myInfo = await prisma.userInfos.findFirst({
+        where: {
+          UserId,
         },
-        Comments: {
-          select: {
-            comment: true,
-          },
+        select: {
+          userInfoId: true,
         },
-        User: {
-          select: {
-            UserInfos: {
-              select: {
-                nickname: true,
-                UserId: true,
+      });
+      const likedIt = like.find((cur) => cur.UserInfoId == myInfo.userInfoId);
+
+      if (likedIt) {
+        await prisma.likePosts.delete({
+          where: {
+            likePostId: likedIt.likePostId,
+          },
+        });
+        likes -= 1;
+      } else {
+        await prisma.likePosts.create({
+          data: {
+            UserInfoId: myInfo.userInfoId,
+            PostId: +postId,
+          },
+        });
+        likes += 1;
+      }
+
+      const post = await prisma.posts.findUnique({
+        where: {
+          postId: +postId,
+        },
+        select: {
+          postId: true,
+          postContent: true,
+          createdAt: true,
+          updatedAt: true,
+          PostPictures: {
+            select: {
+              picture: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+          Comments: {
+            select: {
+              comment: true,
+            },
+          },
+          User: {
+            select: {
+              UserInfos: {
+                select: {
+                  nickname: true,
+                  UserId: true,
+                },
               },
             },
           },
-        },
 
-        _count: {
-          select: {
-            LikePosts: true,
+          _count: {
+            select: {
+              LikePosts: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    res.status(HTTP_STATUS.OK).json({
-      status: HTTP_STATUS.OK,
-      message: MESSAGES.POSTS.LIKES.SUCCEED,
-      data: {
-        post: { post },
-      },
-    });
-  } catch (err) {
-    next(err);
+      res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        message: MESSAGES.POSTS.LIKES.SUCCEED,
+        data: {
+          post: { post },
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 // 팬 게시물 최신순 조회 -- 리팩토링 완료
 router.get('/recent/:group', authMiddleware, async (req, res, next) => {
