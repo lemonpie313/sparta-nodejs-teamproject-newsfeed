@@ -322,8 +322,9 @@ router.get('/:postId', authMiddleware, async (req, res, next) => {
           select: {
             UserInfos: {
               select: {
-                nickname: true,
                 UserId: true,
+                nickname: true,
+                role: true,
               },
             },
           },
