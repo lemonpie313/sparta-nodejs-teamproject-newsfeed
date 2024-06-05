@@ -14,18 +14,17 @@ import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-//게시물 작성 -- 관리자는 접근 권한 X, 리팩토링 완료(그룹 교차 X)
+//게시물 작성 -- 관리자는 접근 권한 X, 리팩토링 완료(그룹 교차 X, Group 대문자)
 router.post(
-
-	'/:group',
+	'/:groupId',
 	authMiddleware,
 	exceptRoles([ROLE.ADMIN]),
 	postValidator,
 	async (req, res, next) => {
 		try {
 			const { postContent, postPicture } = req.body;
-			const { group } = req.params;
-			const { UserId, role } = req.user;
+			const { groupId } = req.params;
+			const { UserId, Role } = req.user;
 
 			// 이미지가 유효한지 (jpg, png 등...)
 			if (postPicture) {
@@ -52,13 +51,34 @@ router.post(
 					message: MESSAGES.POSTS.CREATE.GROUP.INVALID,
 				});
 			}
+			//그룹 이름 검사
+			const group = await prisma.groups.findFirst({
+				where: {
+					groupId: +groupId,
+				},
+			});
+			const role = await prisma.groups.findFirst({
+				where: {
+					groupId: Role,
+				},
+			});
+			if (
+				!group ||
+				(role.groupName != ROLE.FAN && role.groupName != group.groupName)
+			) {
+				return res.status(HTTP_STATUS.NOT_FOUND).json({
+					status: HTTP_STATUS.NOT_FOUND,
+					message: MESSAGES.POSTS.CREATE.GROUP.INVALID,
+				});
+			}
+
 
 			const post = await prisma.$transaction(
 				async (tx) => {
 					const post = await tx.posts.create({
 						data: {
-							group,
-							UserId: +UserId,
+							Group: group.groupId,
+							UserId,
 							postContent,
 						},
 						select: {
@@ -295,11 +315,12 @@ router.patch(
 	}
 );
 
-// 게시물 상세 조회
+// 게시물 상세 조회 -- 수정 완료 (R 대문자)
 router.get('/detail/:postId', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. postId 받아오기
 		const { postId } = req.params;
+
 
 		// 2. 로그인한 사용자의 게시물을 조회한다.
 		const detailPost = await prisma.posts.findUnique({
@@ -329,7 +350,7 @@ router.get('/detail/:postId', authMiddleware, async (req, res, next) => {
 							select: {
 								UserId: true,
 								nickname: true,
-								role: true,
+								Role: true,
 							},
 						},
 					},
@@ -559,19 +580,92 @@ router.patch(
 	}
 );
 
-// 팬 게시물 최신순 조회 -- 리팩토링 완료
+// 팬 게시물 최신순 조회 -- 리팩토링 완료 대소문자 수정
 router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 어떤 그룹인지 값 가져오기
 		const { group } = req.params;
+		try {
+			// 1. 어떤 그룹인지 값 가져오기
+			const { group } = req.params;
 
+			const groupName = await prisma.groups.findFirst({
+				where: {
+					groupId: +group,
+				},
+			});
+			const role = await prisma.groups.findFirst({
+				where: {
+					groupName: ROLE.FAN,
+				},
+			});
+
+			// 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
+			const post = await prisma.posts.findMany({
+				where: {
+					group,
+					User: {
+						UserInfos: {
+							role: ROLE.FAN,
+						},
+					},
+				},
+				select: {
+					postId: true,
+					PostPictures: {
+						select: {
+							picture: true,
+							createdAt: true,
+							updatedAt: true,
+						},
+					},
+					group: true,
+					postContent: true,
+					createdAt: true,
+					updatedAt: true,
+					UserId: false,
+					User: {
+						select: {
+							UserInfos: {
+								select: {
+									nickname: true,
+								},
+							},
+						},
+					},
+					_count: {
+						select: {
+							LikePosts: true,
+						},
+					},
+				},
+				orderBy: {
+					createdAt: 'desc',
+				},
+			});
+			// 3. 조건에 맞는 게시물이 없을 경우에대한 오류 처리 반환
+			if (!post) {
+				return res.status(HTTP_STATUS.NOT_FOUND).json({
+					status: HTTP_STATUS.NOT_FOUND,
+					message: MESSAGES.POSTS.READ.IS_NOT_EXIST,
+				});
+			}
+			// 4. 조건에 맞는 게시물이 있을 경우에대한 성공 처리 반환
+			return res.status(HTTP_STATUS.OK).json({
+				status: HTTP_STATUS.OK,
+				message: MESSAGES.POSTS.READ.SUCCEED,
+				data: post,
+			});
+		} catch (err) {
+			next(err);
+		}
 		// 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
 		const post = await prisma.posts.findMany({
 			where: {
-				group,
+				Group: group.groupId,
 				User: {
 					UserInfos: {
-						role: ROLE.FAN,
+						Role: role.groupId,
 					},
 				},
 			},
@@ -584,7 +678,7 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 						updatedAt: true,
 					},
 				},
-				group: true,
+				Group: true,
 				postContent: true,
 				createdAt: true,
 				updatedAt: true,
@@ -626,25 +720,32 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
 	}
 });
 
-// 아티스트 게시물 최신순 조회 -- 리팩토링 미완성 ( 좋아요 표시 미구현 )
+// 아티스트 게시물 최신순 조회 -- 리팩토링 완성 대소문자 수정
 router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 어떤 그룹인지 값 가져오기
 		const { group } = req.params;
 
+		const groupName = await prisma.groups.findFirst({
+			where: {
+				groupId: +group,
+			},
+		});
+
+
 		// 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
 		const post = await prisma.posts.findMany({
 			where: {
-				group,
+				Group: groupName.groupId,
 				User: {
 					UserInfos: {
-						role: group,
+						Role: groupName.groupId,
 					},
 				},
 			},
 			select: {
 				postId: true,
-				group: true,
+				Group: true,
 				postContent: true,
 				createdAt: true,
 				updatedAt: true,
@@ -661,7 +762,7 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 						UserInfos: {
 							select: {
 								nickname: true,
-								role: true,
+								Role: true,
 							},
 						},
 					},
@@ -695,7 +796,7 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
 	}
 });
 
-// 팔로우한 게시물 피드 - 구현 완료
+// 팔로우한 게시물 피드 - 대소문자 수정
 router.get(
 	'/following',
 	authMiddleware,
@@ -717,6 +818,7 @@ router.get(
 		});
 		const followId = follow.map((cur) => cur.Followings.FollowingUserId);
 
+
 		const followPosts = await prisma.posts.findMany({
 			where: {
 				UserId: {
@@ -732,7 +834,7 @@ router.get(
 						updatedAt: true,
 					},
 				},
-				group: true,
+				Group: true,
 				postContent: true,
 				createdAt: true,
 				updatedAt: true,
@@ -757,10 +859,11 @@ router.get(
 			},
 		});
 
+
 		console.log(followId);
 		return res.status(HTTP_STATUS.OK).json({
 			status: HTTP_STATUS.OK,
-			message: 'goooood',
+			message: MESSAGES.POSTS.READ.SUCCEED,
 			data: followPosts,
 		});
 	}

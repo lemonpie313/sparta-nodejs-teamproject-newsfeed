@@ -118,7 +118,7 @@ router.delete('/:commentId', authMiddleware, async (req, res, next) => {
 	}
 });
 
-/** 댓글 수정 API **/
+// 댓글 수정 -- 에러메시지 잘못돼서 바꿈..
 router.patch('/:commentId', authMiddleware, async (req, res, next) => {
 	try {
 		// 1. 수정할 때 필요한 자료 가져오기
