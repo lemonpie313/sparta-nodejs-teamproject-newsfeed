@@ -38,7 +38,15 @@ const exceptRoles = function (requireRole) {
   return async function (req, res, next) {
     try {
       const { UserId, Role } = req.user;
-      if (requireRole.includes(Role)) {
+      const role = await prisma.groups.findMany({
+        where: {
+            groupName: {
+                in: requireRole,
+            },
+        }
+      });
+      const requireId = role.map((cur) => cur.groupId);
+      if (requireId.includes(Role)) {
         return res.status(HTTP_STATUS.FORBIDDEN).json({
           status: HTTP_STATUS.FORBIDDEN,
           message: MESSAGES.ROLE.FORBIDDEN,

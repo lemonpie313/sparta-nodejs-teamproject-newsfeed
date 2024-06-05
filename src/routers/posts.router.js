@@ -14,7 +14,7 @@ import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-//게시물 작성 -- 관리자는 접근 권한 X, 리팩토링 완료(그룹 교차 X)
+//게시물 작성 -- 관리자는 접근 권한 X, 리팩토링 완료(그룹 교차 X, Group 대문자)
 router.post(
   '/:groupId',
   authMiddleware,
@@ -23,8 +23,8 @@ router.post(
   async (req, res, next) => {
     try {
       const { postContent, postPicture } = req.body;
-      const { group } = req.params;
-      const { UserId, role } = req.user;
+      const { groupId } = req.params;
+      const { UserId, Role } = req.user;
 
       // 이미지가 유효한지 (jpg, png 등...)
       if (postPicture) {
@@ -41,9 +41,19 @@ router.post(
       }
 
       //그룹 이름 검사
+      const group = await prisma.groups.findFirst({
+        where: {
+          groupId: +groupId,
+        }
+      });
+      const role = await prisma.groups.findFirst({
+        where: {
+          groupId: Role,
+        }
+      });
       if (
-        !Object.values(GROUP).includes(group) ||
-        (role != ROLE.FAN && role != group)
+        !group ||
+        (role.groupName!=ROLE.FAN && role.groupName!=group.groupName)
       ) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({
           status: HTTP_STATUS.NOT_FOUND,
@@ -55,8 +65,8 @@ router.post(
         async (tx) => {
           const post = await tx.posts.create({
             data: {
-              group,
-              UserId: +UserId,
+              Group: group.groupId,
+              UserId,
               postContent,
             },
             select: {
@@ -293,7 +303,7 @@ router.patch(
   }
 );
 
-// 게시물 상세 조회
+// 게시물 상세 조회 -- 수정 완료 (R 대문자)
 router.get('/detail/:postId', authMiddleware, async (req, res, next) => {
   try {
     // 1. postId 받아오기
@@ -327,7 +337,7 @@ router.get('/detail/:postId', authMiddleware, async (req, res, next) => {
               select: {
                 UserId: true,
                 nickname: true,
-                role: true,
+                Role: true,
               },
             },
           },
@@ -523,19 +533,30 @@ router.patch(
   }
 );
 
-// 팬 게시물 최신순 조회 -- 리팩토링 완료
+// 팬 게시물 최신순 조회 -- 리팩토링 완료 대소문자 수정
 router.get('/recent/:group', authMiddleware, async (req, res, next) => {
   try {
     // 1. 어떤 그룹인지 값 가져오기
     const { group } = req.params;
 
+    const groupName = await prisma.groups.findFirst({
+      where: {
+        groupId: +group,
+      }
+    });
+    const role = await prisma.groups.findFirst({
+      where: {
+        groupName: ROLE.FAN,
+      }
+    })
+
     // 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
     const post = await prisma.posts.findMany({
       where: {
-        group,
+        Group: group.groupId,
         User: {
           UserInfos: {
-            role: ROLE.FAN,
+            Role: role.groupId,
           },
         },
       },
@@ -548,7 +569,7 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
             updatedAt: true,
           },
         },
-        group: true,
+        Group: true,
         postContent: true,
         createdAt: true,
         updatedAt: true,
@@ -590,25 +611,31 @@ router.get('/recent/:group', authMiddleware, async (req, res, next) => {
   }
 });
 
-// 아티스트 게시물 최신순 조회 -- 리팩토링 미완성 ( 좋아요 표시 미구현 )
+// 아티스트 게시물 최신순 조회 -- 리팩토링 완성 대소문자 수정
 router.get('/artists/:group', authMiddleware, async (req, res, next) => {
   try {
     // 1. 어떤 그룹인지 값 가져오기
     const { group } = req.params;
 
+    const groupName = await prisma.groups.findFirst({
+      where: {
+        groupId: +group,
+      }
+    });
+
     // 2. 해당 그룹, 작성자의 role이 FAN인 것만 조건으로 걸고 최신순(내림차순) 조회하기
     const post = await prisma.posts.findMany({
       where: {
-        group,
+        Group: groupName.groupId,
         User: {
           UserInfos: {
-            role: group,
+            Role: groupName.groupId,
           },
         },
       },
       select: {
         postId: true,
-        group: true,
+        Group: true,
         postContent: true,
         createdAt: true,
         updatedAt: true,
@@ -625,7 +652,7 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
             UserInfos: {
               select: {
                 nickname: true,
-                role: true,
+                Role: true,
               },
             },
           },
@@ -659,7 +686,7 @@ router.get('/artists/:group', authMiddleware, async (req, res, next) => {
   }
 });
 
-// 팔로우한 게시물 피드 - 구현 완료
+// 팔로우한 게시물 피드 - 대소문자 수정
 router.get(
   '/following',
   authMiddleware,
@@ -696,7 +723,7 @@ router.get(
             updatedAt: true,
           },
         },
-        group: true,
+        Group: true,
         postContent: true,
         createdAt: true,
         updatedAt: true,
@@ -724,7 +751,7 @@ router.get(
     console.log(followId);
     return res.status(HTTP_STATUS.OK).json({
       status: HTTP_STATUS.OK,
-      message: 'goooood',
+      message: MESSAGES.POSTS.READ.SUCCEED,
       data: followPosts,
     });
   }

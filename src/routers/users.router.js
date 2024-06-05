@@ -160,7 +160,7 @@ router.get('/:userInfoId', authMiddleware, async (req, res, next) => {
   });
 });
 
-/** 비밀번호 수정 API **/
+// 비밀번호 수정 API >> 얘 왜 안되냐고...
 router.patch(
   '/password',
   authMiddleware,
@@ -236,6 +236,7 @@ router.patch(
     }
   }
 );
+
 // 팔로우 하기 -- 리팩토링함(schema 바뀜...)
 router.patch(
   '/follow/:userId',
