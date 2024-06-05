@@ -147,23 +147,23 @@ model LikeComments {
 
 model Followings {
     followingId     Int      @id @default(autoincrement()) @map("following_id")
+    FollowerId      Int      @unique @map("follower_id")
     FollowingUserId Int      @map("following_user_id")
     createdAt       DateTime @default(now()) @map("created_at")
 
-    User      Users      @relation(fields: [FollowingUserId], references: [userId], onDelete: Cascade)
-    Followers Followers?
+    User      Users     @relation(fields: [FollowingUserId], references: [userId], onDelete: Cascade)
+    Followers Followers @relation(fields: [FollowerId], references: [followerId], onDelete: Cascade)
 
     @@map("followings")
 }
 
 model Followers {
     followerId     Int      @id @default(autoincrement()) @map("follower_id")
-    FollowingId    Int      @unique @map("following_id")
     FollowerUserId Int      @map("follower_user_id")
     createdAt      DateTime @default(now()) @map("created_at")
 
-    User       Users      @relation(fields: [FollowerUserId], references: [userId], onDelete: Cascade)
-    Followings Followings @relation(fields: [FollowingId], references: [followingId])
+    User       Users       @relation(fields: [FollowerUserId], references: [userId], onDelete: Cascade)
+    Followings Followings?
 
     @@map("followers")
 }

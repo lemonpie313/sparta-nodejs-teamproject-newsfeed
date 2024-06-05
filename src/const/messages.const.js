@@ -71,12 +71,12 @@ export const MESSAGES = {
       SAME_PASSWORD: '기존 비밀번호는 새 비밀번호로 등록이 불가능합니다.',
     },
     FOLLOW: {
-			FOLLOW_SUCCEED: '팔로우 했습니다.',
-			IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
+      FOLLOW_SUCCEED: '팔로우 했습니다.',
+      IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',
       SELF_IMPOSSIBLE: '자기 자신은 팔로우 할 수 없습니다.',
       IMPOSSIBLE: '팔로우 할 수 없는 계정입니다.',
-			UNFOLLOW_SUCCEED: '언팔로우 했습니다.'
-		}
+      UNFOLLOW_SUCCEED: '언팔로우 했습니다.',
+    },
   },
   POSTS: {
     CREATE: {
