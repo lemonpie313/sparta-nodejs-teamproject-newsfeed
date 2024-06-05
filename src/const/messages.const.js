@@ -1,4 +1,23 @@
 export const MESSAGES = {
+  ADMIN: {
+    INIT: {
+      NOT_AVAILABLE: '접근 권한이 없습니다.',
+      SUCCEED: '셋팅이 완료되었습니다.',
+    },
+    CREATE_GROUP: {
+      IS_EXIST: '이미 존재하는 그룹입니다.',
+      SUCCEED: '그룹 생성이 완료되었습니다.',
+    },
+    UPDATE_GROUP: {
+      IS_NOT_EXIST: '해당 그룹이 존재하지 않습니다.',
+      SUCCEED: '그룹 수정이 완료되었습니다.',
+    },
+    DELETE_GROUP: {
+      IS_NOT_EXIST: '해당 그룹이 존재하지 않습니다.',
+      ARTIST_EXIST:
+        '그룹에 해당하는 아티스트가 존재하여, 그룹을 삭제할 수 없습니다.',
+    },
+  },
   AUTH: {
     COMMON: {
       EMAIL: {
@@ -29,6 +48,10 @@ export const MESSAGES = {
       SUCCEED: '회원가입에 성공했습니다.',
     },
     SIGN_UP_ARTIST: {
+      ARTIST_ID: {
+        REQUIRED: '아티스트 아이디 값을 입력해주세요.',
+        IS_NOT_EXIST: '해당 그룹이 존재하지 않습니다.',
+      },
       NOT_AVAILABLE: '회원가입을 할 수 없습니다.',
       SUCCEED: '아티스트 계정 생성에 성공했습니다.',
     },
@@ -121,7 +144,7 @@ export const MESSAGES = {
       SUCCEED: '댓글 조회에 성공하였습니다.',
     },
     UPDATE: {
-      NO_COMMENTS: '댓글을 입력해 주세요.',
+      NO_COMMENTS: '댓글이 존재하지 않습니다.',
       NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
       NO_EDIT: '수정될 내용이 없습니다.',
       SUCCEED: '댓글 수정에 성공하였습니다.',

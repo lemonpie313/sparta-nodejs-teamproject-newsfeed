@@ -34,7 +34,7 @@ export default async function (req, res, next) {
       where: { UserId: +userId },
       select: {
         UserId: true,
-        role: true,
+        Role: true,
       },
     });
 

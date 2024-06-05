@@ -33,7 +33,9 @@ const signUpArtistSchema = Joi.object({
     'string.empty': MESSAGES.AUTH.COMMON.EMAIL.REQUIRED,
     'string.email': MESSAGES.AUTH.COMMON.EMAIL.INVALID_FORMAT,
   }),
-  artistId: Joi.string().required().messages({}),
+  artistId: Joi.number().required().messages({
+    'any.required': MESSAGES.AUTH.SIGN_UP_ARTIST.ARTIST_ID.REQUIRED,
+  }),
   password: Joi.string().required().min(6).messages({
     'any.required': MESSAGES.AUTH.COMMON.PASSWORD.REQUIRED,
     'string.empty': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
