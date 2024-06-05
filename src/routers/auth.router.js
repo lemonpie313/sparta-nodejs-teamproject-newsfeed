@@ -11,8 +11,10 @@ import bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { ROLE } from '../const/role.const.js';
+import authMiddleware from '../middlewares/access-token.middleware.js';
 import refreshTokenMiddleware from '../middlewares/refresh-token.middleware.js';
 import { ARTIST_ID } from '../const/artistId.const.js';
+import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
@@ -90,10 +92,9 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
   }
 });
 
-//회원가입 - 아티스트 전용
+//아티스트 계정 생성 - 관리자 계정으로 들어가서 계정을 만들 수 있음 > 인증 + 역할인가 필요
 router.post(
-  '/sign-up/artists',
-  signUpArtistValidator,
+  '/sign-up/artists', authMiddleware,  requireRoles([ROLE.ADMIN]), signUpArtistValidator,
   async (req, res, next) => {
     try {
       const {

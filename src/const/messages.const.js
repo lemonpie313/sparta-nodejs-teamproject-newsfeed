@@ -133,4 +133,8 @@ export const MESSAGES = {
     AGAIM_TOKEN: '토큰 재발급에 성공했습니다',
     DISCARDED_TOKEN: '폐기된 인증정보입니다.',
   },
+  ROLE: {
+    FORBIDDEN: '접근 권한이 없습니다.',
+    ERROR: '비정상적인 접근입니다.',
+  }
 };

@@ -10,13 +10,14 @@ import {
 import { GROUP } from '../const/group.const.js';
 import { ROLE } from '../const/role.const.js';
 import { Prisma } from '@prisma/client';
+import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-//게시물 작성 -- 리팩토링 완료
+//게시물 작성 -- 관리자는 접근 권한 X
 router.post(
   '/:group',
-  authMiddleware,
+  authMiddleware, exceptRoles([ROLE.ADMIN]),
   postValidator,
   async (req, res, next) => {
     try {
@@ -115,8 +116,8 @@ router.post(
   }
 );
 
-// 내 게시물 목록 조회
-router.get('/me', authMiddleware, async (req, res, next) => {
+// 내 게시물 목록 조회 -- 관리자는 접근 권한 X
+router.get('/me', authMiddleware, exceptRoles([ROLE.ADMIN]), async (req, res, next) => {
   try {
     // 1. 받아온 req.user에서 userId 가져온다.
     const { UserId } = req.user;
@@ -167,7 +168,7 @@ router.get('/me', authMiddleware, async (req, res, next) => {
   }
 });
 
-// 게시물 수정 -- 리팩토링 완료
+// 게시물 수정
 router.patch(
   '/:postId',
   authMiddleware,
@@ -283,7 +284,7 @@ router.patch(
   }
 );
 
-// 게시물 상세 조회 -- 리팩토링 완료
+// 게시물 상세 조회
 router.get('/:postId', authMiddleware, async (req, res, next) => {
   try {
     // 1. postId 받아오기
@@ -388,8 +389,8 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
   }
 });
 
-// 게시물 좋아요 - 리팩토링 완료
-router.patch('/like/:postId', authMiddleware, async (req, res, next) => {
+// 게시물 좋아요 -- 관리자는 접근 권한 X
+router.patch('/like/:postId', authMiddleware, exceptRoles([ROLE.ADMIN]), async (req, res, next) => {
   try {
     const { postId } = req.params;
     const { UserId } = req.user;

@@ -3,11 +3,14 @@ import { prisma } from '../utils/prisma/index.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
 import { MESSAGES } from '../const/messages.const.js';
+import { ROLE } from '../const/role.const.js';
+import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
 /** 댓글 작성 API **/
-router.post('/:postId', authMiddleware, async (req, res, next) => {
+// -- 관리자는 접근 권한 X
+router.post('/:postId', authMiddleware, exceptRoles([ROLE.ADMIN]), async (req, res, next) => {
   try {
     // 1. 댓글 작성에 필요한 정보 가져오기
     // 1-1. req.body로부터 comment를 받아온다.
@@ -141,7 +144,8 @@ router.patch('/:commentId', authMiddleware, async (req, res, next) => {
 });
 
 /** 내 댓글 목록 조회 API **/
-router.get('/me', authMiddleware, async (req, res, next) => {
+// -- 관리자는 접근 권한 X
+router.get('/me', authMiddleware, exceptRoles([ROLE.ADMIN]), async (req, res, next) => {
   try {
     // 1. req.user로부터 UserId 가져오기
     const { UserId } = req.user;
@@ -185,7 +189,8 @@ router.get('/me', authMiddleware, async (req, res, next) => {
 });
 
 /** 댓글 좋아요 API **/
-router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
+// -- 관리자는 접근 권한 X
+router.patch('/like/:commentId', authMiddleware, exceptRoles([ROLE.ADMIN]), async (req, res, next) => {
   try {
     // 1. 필요한 정보들 가져오기
     // 1-1. 좋아요를 누른 사람이 누구인가? req.user에서 가져와!
