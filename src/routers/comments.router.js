@@ -24,6 +24,19 @@ router.post('/:postId', authMiddleware, async (req, res, next) => {
         message: MESSAGES.COMMENTS.CREATE.NO_COMMENTS,
       });
     }
+    
+    const post = await prisma.posts.findFirst({
+      where: {
+        postId: +postId,
+      }
+    });
+    if(!post) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        status: HTTP_STATUS.NOT_FOUND,
+        message: MESSAGES.COMMENTS.CREATE.IS_NOT_EXIST,
+      });
+    }
+
     // 3. 작성한 내용을 바탕으로 comments 테이블에 comment 생성
     const newComment = await prisma.comments.create({
       //comment는 위에서 선언해서.. newComment로 선언함

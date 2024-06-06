@@ -98,6 +98,12 @@ router.patch(
       const { groupId } = req.params;
       const { groupName, numOfMembers } = req.body;
       const { groupLogo: logo, groupPicture: picture } = req.files;
+      if (!groupName && !numOfMembers && !logo && !picture) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: MESSAGES.ADMIN.UPDATE_GROUP.REQUIRED,
+        });
+      }
       const group = await prisma.groups.findFirst({
         where: {
           groupId: +groupId,
@@ -142,7 +148,6 @@ router.delete(
   async (req, res, next) => {
     try {
       const { groupId } = req.params;
-      const { groupName, numOfMembers } = req.body;
       const group = await prisma.groups.findFirst({
         where: {
           groupId: +groupId,
