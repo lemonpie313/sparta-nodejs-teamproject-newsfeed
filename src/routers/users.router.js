@@ -84,13 +84,18 @@ router.patch(
 					message: MESSAGES.USERS.UPDATE.PW_NOT_MATCHED,
 				});
 			}
+			const previousInfo = await prisma.userInfos.findFirst({
+				where: {
+					UserId,
+				}
+			});
 
 			const myInfo = await prisma.userInfos.update({
 				data: {
 					name,
 					nickname,
 					selfIntroduction,
-					profilePicture: file.location,
+					profilePicture: file ? file.location : previousInfo.profilePicture,
 				},
 				where: {
 					UserId: user.userId,

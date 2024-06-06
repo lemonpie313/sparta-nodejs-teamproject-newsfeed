@@ -127,6 +127,8 @@ export const MESSAGES = {
 		},
 		UPDATE: {
 			SUCCEED: '게시물 수정이 완료되었습니다.',
+			IS_NOT_EXIST: '게시물이 존재하지 않습니다.',
+			NO_CONTENT: '수정할 내용을 입력하지 않았습니다.'
 		},
 		DELETE: {
 			NO_POSTID: '해당 게시글이 존재하지 않습니다.',

@@ -66,7 +66,7 @@ router.post('/sign-up', toS3.single('file'), signUpValidator, async (req, res, n
 						nickname,
 						Role: group.groupId,
 						selfIntroduction,
-						profilePicture: file ? file.location :  process.env.DEFAULT_PROFILE_PICTURE,
+						profilePicture: file ? file.location : process.env.DEFAULT_PROFILE_PICTURE,
 					},
 					//.env에 아래 줄 추가해주세요
 					// DEFAULT_PROFILE_PICTURE='https://lemonpie313.s3.ap-northeast-2.amazonaws.com/test/1717670788914_03103351.jpg'
