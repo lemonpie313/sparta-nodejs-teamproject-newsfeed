@@ -12,6 +12,11 @@ const initSchema = Joi.object({
     'string.empty': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
     'string.min': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
   }),
+  passwordConfirm: Joi.string().required().min(6).messages({
+    'any.required': MESSAGES.AUTH.COMMON.PASSWORD.REQUIRED,
+    'string.empty': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
+    'string.min': MESSAGES.AUTH.COMMON.PASSWORD.MIN_LENGTH,
+  }),
   name: Joi.string().required().messages({
     'any.required': MESSAGES.AUTH.COMMON.NAME.REQUIRED,
     'string.empty': MESSAGES.AUTH.COMMON.NAME.EMPTY,
@@ -55,7 +60,6 @@ const initValidator = async (req, res, next) => {
   }
 };
 
-
 const signUpArtistValidator = async (req, res, next) => {
   try {
     await signUpArtistSchema.validateAsync(req.body);
@@ -64,6 +68,5 @@ const signUpArtistValidator = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export { initValidator, signUpArtistValidator };

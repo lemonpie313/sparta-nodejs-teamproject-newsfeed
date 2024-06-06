@@ -2,13 +2,27 @@ export const MESSAGES = {
 	ADMIN: {
 		INIT: {
 			NOT_AVAILABLE: '접근 권한이 없습니다.',
+			PW_NOT_MATCHED: '입력한 두 비밀번호가 일치하지 않습니다.',
 			SUCCEED: '셋팅이 완료되었습니다.',
 		},
 		CREATE_GROUP: {
+			GROUP_NAME: {
+				REQUIRED: '그룹 이름을 입력해주세요.',
+			},
+			NUM_OF_MEMBERS: {
+				REQUIRED: '그룹 멤버 수를 입력해주세요.',
+			},
+			GROUP_LOGO: {
+				REQUIRED: '그룹 로고 이미지를 추가해주세요.',
+			},
+			GROUP_PICTURE: {
+				REQUIRED: '그룹 사진을 추가해주세요.',
+			},
 			IS_EXIST: '이미 존재하는 그룹입니다.',
 			SUCCEED: '그룹 생성이 완료되었습니다.',
 		},
 		UPDATE_GROUP: {
+			REQUIRED: '수정할 내용을 입력해주세요.',
 			IS_NOT_EXIST: '해당 그룹이 존재하지 않습니다.',
 			SUCCEED: '그룹 수정이 완료되었습니다.',
 		},
@@ -34,7 +48,6 @@ export const MESSAGES = {
 			EMAIL: {
 				REQUIRED: '이메일을 입력해주세요.',
 				INVALID_FORMAT: '이메일 형식이 올바르지 않습니다.',
-				DUPLICATED: '이미 가입된 사용자입니다.',
 			},
 			PASSWORD: {
 				REQUIRED: '비밀번호를 입력해주세요.',
@@ -131,20 +144,21 @@ export const MESSAGES = {
 			NO_CONTENT: '수정할 내용을 입력하지 않았습니다.'
 		},
 		DELETE: {
-			NO_POSTID: '해당 게시글이 존재하지 않습니다.',
+			NO_POSTID: '해당 게시물이 존재하지 않습니다.',
 			NOT_AVAILABLE: '잘못된 접근입니다.',
 			SUCCEED: '삭제가 완료되었습니다.',
 		},
 		LIKES: {
-			IS_NOT_EXIST: '해당 게시글이 존재하지 않습니다',
+			IS_NOT_EXIST: '해당 게시물이 존재하지 않습니다',
 			NOT_AVAILABLE: '본인의 게시물에는 좋아요를 누를 수 없습니다.',
 			SUCCEED: '좋아요가 반영되었습니다.',
 		},
 	},
 	COMMENTS: {
 		CREATE: {
+			IS_NOT_EXIST: '해당 게시물이 존제하지 않습니다.',
 			NO_COMMENTS: '댓글을 입력해 주세요.',
-			SUCCEED: '댓글 작성에 성공하였습니다.',
+			SUCCEED: '댓글 작성이 완료되었습니다.',
 		},
 		READ: {
 			SUCCEED: '댓글 조회에 성공하였습니다.',
@@ -153,11 +167,11 @@ export const MESSAGES = {
 			NO_COMMENTS: '댓글이 존재하지 않습니다.',
 			NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
 			NO_EDIT: '수정될 내용이 없습니다.',
-			SUCCEED: '댓글 수정에 성공하였습니다.',
+			SUCCEED: '댓글 수정이 완료되었습니다.',
 		},
 		DELETE: {
 			NO_COMMENTS: '댓글이 존재하지 않습니다.',
-			SUCCEED: '댓글 삭제에 성공하였습니다.',
+			SUCCEED: '댓글 삭제가 완료되었습니다.',
 			NOT_AVAILABLE: '잘못된 접근입니다.',
 		},
 		LIKE: {

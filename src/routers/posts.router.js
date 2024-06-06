@@ -13,7 +13,6 @@ import { Prisma } from '@prisma/client';
 import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 import { toS3 } from '../middlewares/multer.middleware.js';
 
-
 const router = express.Router();
 
 //게시물 작성 -- 관리자는 접근 권한 X, 리팩토링 완료(그룹 교차 X, Group 대문자)
@@ -355,7 +354,7 @@ router.get('/detail/:postId', authMiddleware, async (req, res, next) => {
 router.delete('/:postId', authMiddleware, async (req, res, next) => {
 	try {
 		//유저 아이디를 req.user에서 가져옴
-		const { UserId } = req.user;
+		const { UserId, Role } = req.user;
 
 		//포스트 아이디를 req.params에서 가져옴
 		const { postId } = req.params;
@@ -372,6 +371,20 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
 			return res.status(HTTP_STATUS.NOT_FOUND).json({
 				status: HTTP_STATUS.NOT_FOUND,
 				message: MESSAGES.POSTS.DELETE.NO_POSTID,
+			});
+		}
+
+		const role = await prisma.groups.findFirst({
+			where: {
+				groupName: ROLE.ADMIN,
+			}
+		})
+
+		// 2. 글쓴이도 아니고 관리자도 아닐 경우
+		if (post.UserId !== UserId && Role !== role.groupId) {
+			return res.status(HTTP_STATUS.NOT_FOUND).json({
+				status: HTTP_STATUS.NOT_FOUND,
+				message: MESSAGES.POSTS.DELETE.NOT_AVAILABLE,
 			});
 		}
 

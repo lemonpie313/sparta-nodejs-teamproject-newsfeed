@@ -11,6 +11,8 @@ model Groups {
     groupId      Int      @id @default(autoincrement()) @map("group_id")
     groupName    String   @unique @map("group_name")
     numOfMembers Int      @map("num_of_members")
+    groupLogo    String   @map("group_logo")
+    groupPicture String   @map("group_picture")
     createdAt    DateTime @default(now()) @map("created_at")
     updatedAt    DateTime @updatedAt @map("updated_at")
 

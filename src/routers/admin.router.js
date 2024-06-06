@@ -16,7 +16,7 @@ const router = express.Router();
 // 초기 셋팅 기능..
 router.post('/init', initValidator, async (req, res, next) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, passwordConfirm, name } = req.body;
     const [nickname, selfIntroduction] = ['admin', 'admin'];
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,18 +31,28 @@ router.post('/init', initValidator, async (req, res, next) => {
         message: MESSAGES.ADMIN.INIT.NOT_AVAILABLE,
       });
     }
+    if (password!=passwordConfirm) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        status: HTTP_STATUS.BAD_REQUEST,
+        message: MESSAGES.ADMIN.INIT.PW_NOT_MATCHED,
+        });
+      }
     const userInfo = await prisma.$transaction(
       async (tx) => {
         const admin = await tx.groups.create({
           data: {
             groupName: ROLE.ADMIN,
             numOfMembers: 1,
+            groupLogo: process.env.DEFAULT_PROFILE_PICTURE,
+            groupPicture: process.env.DEFAULT_PROFILE_PICTURE,
           },
         });
         const fan = await tx.groups.create({
           data: {
             groupName: ROLE.FAN,
             numOfMembers: 0,
+            groupLogo: process.env.DEFAULT_PROFILE_PICTURE,
+            groupPicture: process.env.DEFAULT_PROFILE_PICTURE,
           },
         });
         const user = await tx.Users.create({
@@ -100,14 +110,8 @@ router.post(
   signUpArtistValidator,
   async (req, res, next) => {
     try {
-      const {
-        email,
-        artistId,
-        password,
-        name,
-        nickname,
-        selfIntroduction,
-      } = req.body;
+      const { email, artistId, password, name, nickname, selfIntroduction } =
+        req.body;
       const file = req.file;
       if (!file) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
