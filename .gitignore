@@ -5,7 +5,7 @@
 .env
 
 ### test ###
-test
+test/
 
 ### Node ###
 # Logs
