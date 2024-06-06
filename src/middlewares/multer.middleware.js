@@ -60,7 +60,6 @@ const toS3 = multer({
     bucket: process.env.AWS_BUCKET,
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key: (req, file, callback) => {
-
       // 오늘 날짜 구하기
       const today = new Date();
       const todayNum = Number(today);
@@ -78,10 +77,7 @@ const toS3 = multer({
       }
 
       // test라는 파일 내부에 업로드한 사용자에 따라 임의의 파일명으로 저장
-      callback(
-        null,
-        `test/${todayNum}_${randomNumber}` + extension
-      );
+      callback(null, `test/${todayNum}_${randomNumber}` + extension);
     },
     // acl 권한 설정
     acl: 'public-read-write',
