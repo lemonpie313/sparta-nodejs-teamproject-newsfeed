@@ -47,6 +47,8 @@ router.post(
   }
 );
 
+
+//그룹 조회
 router.get('/', async (req, res, next) => {
   const group = await prisma.groups.findMany({
     where: {

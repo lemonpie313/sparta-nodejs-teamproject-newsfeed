@@ -5,7 +5,7 @@ import postsRouter from './posts.router.js';
 import commentsRouter from './comments.router.js';
 import multimediaRouter from './multimedia.router.js';
 import adminRouter from './admin.router.js';
-import groupRouter from './group.router.js';
+import groupRouter from './groups.router.js';
 
 const apiRouter = express.Router();
 
@@ -14,7 +14,7 @@ apiRouter.use('/users', [usersRouter]);
 apiRouter.use('/posts', [postsRouter]);
 apiRouter.use('/comments', [commentsRouter]);
 apiRouter.use('/admin', [adminRouter]);
-apiRouter.use('/group', [groupRouter]);
+apiRouter.use('/groups', [groupRouter]);
 apiRouter.use('/multimedia', [multimediaRouter]);
 
 export { apiRouter };
