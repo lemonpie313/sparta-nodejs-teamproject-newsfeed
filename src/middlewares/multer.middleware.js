@@ -42,13 +42,31 @@ const toLocal = multer({
     filename: function (req, file, done) {
       // 그룹명 가져오기
       const { group: group } = req.params;
+      let groupName;
+      switch (+group) {
+        case 3:
+          groupName = 'MONSTAX';
+          break;
+        case 4:
+          groupName = 'WJSN';
+          break;
+        case 5:
+          groupName = 'CRAVITY';
+          break;
+        case 6:
+          groupName = 'IVE';
+          break;
+        default:
+          groupName = 'STARSHIP';
+      }
+
       // 임의번호 생성
       let randomNumber = '';
       for (let i = 0; i < 8; i++) {
         randomNumber += String(Math.floor(Math.random() * 10));
       }
       const ext = path.extname(file.originalname);
-      done(null, group + '_' + Date.now() + '_' + randomNumber + ext);
+      done(null, groupName + '_' + Date.now() + '_' + randomNumber + ext);
     },
   }),
   // 파일 허용 사이즈 (5 MB)는 왜 이정도로 했는지 발표 때 설명 가능하도록 할 것
@@ -64,6 +82,23 @@ const toS3 = multer({
     key: (req, file, callback) => {
       // 그룹 명 받아오기
       const { group: group } = req.params;
+      let groupName;
+      switch (+group) {
+        case 3:
+          groupName = 'MONSTAX';
+          break;
+        case 4:
+          groupName = 'WJSN';
+          break;
+        case 5:
+          groupName = 'CRAVITY';
+          break;
+        case 6:
+          groupName = 'IVE';
+          break;
+        default:
+          groupName = 'STARSHIP';
+      }
 
       // 오늘 날짜 구하기
       const today = new Date();
@@ -82,7 +117,10 @@ const toS3 = multer({
       }
 
       // test라는 파일 내부에 업로드한 사용자에 따라 임의의 파일명으로 저장
-      callback(null, `test/${group}_${todayNum}_${randomNumber}` + extension);
+      callback(
+        null,
+        `test/${groupName}_${todayNum}_${randomNumber}` + extension
+      );
     },
     // acl 권한 설정
     acl: 'public-read-write',

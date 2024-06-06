@@ -37,6 +37,7 @@ router.post(
   '/uploads/:group',
   toS3.array('files', 5),
   function (req, res, next) {
+    console.log(req.files);
     const loc = req.files.map((m) => {
       return { location: m.location };
     });
