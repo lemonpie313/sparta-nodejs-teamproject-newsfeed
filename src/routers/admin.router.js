@@ -37,12 +37,16 @@ router.post('/init', initValidator, async (req, res, next) => {
           data: {
             groupName: ROLE.ADMIN,
             numOfMembers: 1,
+            groupLogo: process.env.DEFAULT_PROFILE_PICTURE,
+            groupPicture: process.env.DEFAULT_PROFILE_PICTURE,
           },
         });
         const fan = await tx.groups.create({
           data: {
             groupName: ROLE.FAN,
             numOfMembers: 0,
+            groupLogo: process.env.DEFAULT_PROFILE_PICTURE,
+            groupPicture: process.env.DEFAULT_PROFILE_PICTURE,
           },
         });
         const user = await tx.Users.create({
@@ -100,14 +104,8 @@ router.post(
   signUpArtistValidator,
   async (req, res, next) => {
     try {
-      const {
-        email,
-        artistId,
-        password,
-        name,
-        nickname,
-        selfIntroduction,
-      } = req.body;
+      const { email, artistId, password, name, nickname, selfIntroduction } =
+        req.body;
       const file = req.file;
       if (!file) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({

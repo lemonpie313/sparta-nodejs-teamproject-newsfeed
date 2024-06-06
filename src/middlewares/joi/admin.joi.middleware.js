@@ -55,7 +55,6 @@ const initValidator = async (req, res, next) => {
   }
 };
 
-
 const signUpArtistValidator = async (req, res, next) => {
   try {
     await signUpArtistSchema.validateAsync(req.body);
@@ -64,6 +63,5 @@ const signUpArtistValidator = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export { initValidator, signUpArtistValidator };

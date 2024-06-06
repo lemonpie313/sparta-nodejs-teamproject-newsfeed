@@ -26,8 +26,6 @@ const signUpSchema = Joi.object({
   }),
 });
 
-
-
 const signInSchema = Joi.object({
   email: Joi.string().email().required().messages({
     'any.required': MESSAGES.AUTH.COMMON.EMAIL.REQUIRED,

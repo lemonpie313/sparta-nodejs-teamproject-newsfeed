@@ -5,6 +5,7 @@ import { HTTP_STATUS } from '../const/http-status.const.js';
 import { ROLE } from '../const/role.const.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { requireRoles } from '../middlewares/role.middleware.js';
+import { toS3 } from '../middlewares/multer.middleware.js';
 
 const router = express.Router();
 
@@ -12,18 +13,32 @@ const router = express.Router();
 router.post(
   '/',
   authMiddleware,
+  toS3.fields([{ name: 'groupLogo' }, { name: 'groupPicture' }], 2),
   requireRoles([ROLE.ADMIN]),
   async (req, res, next) => {
     try {
       const { groupName, numOfMembers } = req.body;
-
+      const { groupLogo, groupPicture } = req.files;
+      console.log(groupLogo);
+      if (!groupLogo) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: MESSAGES.ADMIN.CREATE_GROUP.GROUP_LOGO.REQUIRED,
+        });
+      }
+      if (!groupPicture) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: MESSAGES.ADMIN.CREATE_GROUP.GROUP_PICTURE.REQUIRED,
+        });
+      }
       const group = await prisma.groups.findFirst({
         where: {
           groupName,
         },
       });
       if (group) {
-        return res.status(HTTP_STATUS.CREATED).json({
+        return res.status(HTTP_STATUS.CONFLICT).json({
           status: HTTP_STATUS.CONFLICT,
           message: MESSAGES.ADMIN.CREATE_GROUP.IS_EXIST,
         });
@@ -32,7 +47,9 @@ router.post(
       const newGroup = await prisma.groups.create({
         data: {
           groupName,
-          numOfMembers,
+          numOfMembers: +numOfMembers,
+          groupLogo: groupLogo[0].location,
+          groupPicture: groupPicture[0].location,
         },
       });
 
@@ -46,7 +63,6 @@ router.post(
     }
   }
 );
-
 
 //그룹 조회
 router.get('/', async (req, res, next) => {
