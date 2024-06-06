@@ -2,7 +2,6 @@ import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
 import {
 	signUpValidator,
-	signUpArtistValidator,
 	signInValidator,
 } from '../middlewares/joi/auth.joi.middleware.js';
 import { MESSAGES } from '../const/messages.const.js';
@@ -11,10 +10,7 @@ import bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { ROLE } from '../const/role.const.js';
-import authMiddleware from '../middlewares/access-token.middleware.js';
 import refreshTokenMiddleware from '../middlewares/refresh-token.middleware.js';
-import { ARTIST_ID } from '../const/artistId.const.js';
-import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
@@ -97,99 +93,6 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 		next(err);
 	}
 });
-
-//아티스트 계정 생성 - 관리자 계정으로 들어가서 계정을 만들 수 있음 > 인증 + 역할인가 필요
-router.post(
-	'/sign-up/artists',
-	authMiddleware,
-	requireRoles([ROLE.ADMIN]),
-	signUpArtistValidator,
-	async (req, res, next) => {
-		try {
-			const {
-				email,
-				artistId,
-				password,
-				name,
-				nickname,
-				selfIntroduction,
-				profilePicture,
-			} = req.body;
-			const isExistEmail = await prisma.users.findFirst({
-				//db의 이메일:body의 이메일
-				where: {
-					email,
-				},
-			});
-			if (isExistEmail) {
-				return res.status(HTTP_STATUS.CONFLICT).json({
-					status: HTTP_STATUS.CONFLICT,
-					message: MESSAGES.AUTH.SIGN_UP.NOT_AVAILABLE,
-				});
-			}
-
-			const hashedPassword = await bcrypt.hash(password, 10);
-
-			const group = await prisma.groups.findFirst({
-				where: {
-					groupId: artistId,
-				},
-			});
-			if (!group) {
-				return res.status(HTTP_STATUS.NOT_FOUND).json({
-					status: HTTP_STATUS.NOT_FOUND,
-					message: MESSAGES.AUTH.SIGN_UP_ARTIST.ARTIST_ID.IS_NOT_EXIST,
-				});
-			}
-
-			const userInfo = await prisma.$transaction(
-				async (tx) => {
-					const user = await tx.Users.create({
-						data: {
-							email,
-							password: hashedPassword,
-						},
-						select: {
-							userId: true,
-							email: true,
-						},
-					});
-					const userInfo = await tx.UserInfos.create({
-						data: {
-							UserId: user.userId,
-							name,
-							nickname,
-							Role: group.groupId,
-							selfIntroduction,
-							profilePicture: profilePicture ?? 'image.jpg',
-						},
-						select: {
-							name: true,
-							Role: true,
-							nickname: true,
-							selfIntroduction: true,
-							profilePicture: true,
-							createdAt: true,
-							updatedAt: true,
-						},
-					});
-					return { ...user, ...userInfo };
-				},
-				{
-					isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-				}
-			);
-
-			return res.status(HTTP_STATUS.CREATED).json({
-				status: HTTP_STATUS.CREATED,
-				message: MESSAGES.AUTH.SIGN_UP_ARTIST.SUCCEED,
-				data: { userInfo },
-			});
-		} catch (err) {
-			next(err);
-		}
-	}
-);
 
 //로그인
 router.post('/log-in', signInValidator, async (req, res, next) => {

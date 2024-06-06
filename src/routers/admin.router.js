@@ -8,6 +8,7 @@ import { Prisma } from '@prisma/client';
 import { ROLE } from '../const/role.const.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { requireRoles } from '../middlewares/role.middleware.js';
+import { signUpArtistValidator } from '../middlewares/joi/auth.joi.middleware.js';
 
 const router = express.Router();
 
@@ -89,133 +90,92 @@ router.post('/init', initValidator, async (req, res, next) => {
   }
 });
 
-//그룹 추가 기능
+//아티스트 계정 생성 - 관리자 계정으로 들어가서 계정을 만들 수 있음 > 인증 + 역할인가 필요
 router.post(
-  '/group',
+  '/sign-up/artists',
   authMiddleware,
   requireRoles([ROLE.ADMIN]),
+  signUpArtistValidator,
   async (req, res, next) => {
     try {
-      const { groupName, numOfMembers } = req.body;
-
-      const group = await prisma.groups.findFirst({
+      const {
+        email,
+        artistId,
+        password,
+        name,
+        nickname,
+        selfIntroduction,
+        profilePicture,
+      } = req.body;
+      const isExistEmail = await prisma.users.findFirst({
+        //db의 이메일:body의 이메일
         where: {
-          groupName,
+          email,
         },
       });
-      if (group) {
-        return res.status(HTTP_STATUS.CREATED).json({
+      if (isExistEmail) {
+        return res.status(HTTP_STATUS.CONFLICT).json({
           status: HTTP_STATUS.CONFLICT,
-          message: MESSAGES.ADMIN.CREATE_GROUP.IS_EXIST,
+          message: MESSAGES.AUTH.SIGN_UP.NOT_AVAILABLE,
         });
       }
 
-      const newGroup = await prisma.groups.create({
-        data: {
-          groupName,
-          numOfMembers,
-        },
-      });
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-      return res.status(HTTP_STATUS.CREATED).json({
-        status: HTTP_STATUS.CREATED,
-        message: MESSAGES.ADMIN.CREATE_GROUP.SUCCEED,
-        data: newGroup,
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-//그룹수정
-router.patch(
-  '/group/:groupId',
-  authMiddleware,
-  requireRoles([ROLE.ADMIN]),
-  async (req, res, next) => {
-    try {
-      const { groupId } = req.params;
-      const { groupName, numOfMembers } = req.body;
       const group = await prisma.groups.findFirst({
         where: {
-          groupId: +groupId,
+          groupId: artistId,
         },
       });
-
       if (!group) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({
           status: HTTP_STATUS.NOT_FOUND,
-          message: MESSAGES.ADMIN.UPDATE_GROUP.IS_NOT_EXIST,
+          message: MESSAGES.AUTH.SIGN_UP_ARTIST.ARTIST_ID.IS_NOT_EXIST,
         });
       }
 
-      const updatedGroup = await prisma.groups.update({
-        data: {
-          groupName,
-          numOfMembers,
+      const userInfo = await prisma.$transaction(
+        async (tx) => {
+          const user = await tx.Users.create({
+            data: {
+              email,
+              password: hashedPassword,
+            },
+            select: {
+              userId: true,
+              email: true,
+            },
+          });
+          const userInfo = await tx.UserInfos.create({
+            data: {
+              UserId: user.userId,
+              name,
+              nickname,
+              Role: group.groupId,
+              selfIntroduction,
+              profilePicture: profilePicture ?? 'image.jpg',
+            },
+            select: {
+              name: true,
+              Role: true,
+              nickname: true,
+              selfIntroduction: true,
+              profilePicture: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          });
+          return { ...user, ...userInfo };
         },
-        where: {
-          groupId: +groupId,
-        },
-      });
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        }
+      );
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
-        message: MESSAGES.ADMIN.UPDATE_GROUP.SUCCEED,
-        data: updatedGroup,
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-);
-
-//그룹 삭제
-router.delete(
-  '/group/:groupId',
-  authMiddleware,
-  requireRoles([ROLE.ADMIN]),
-  async (req, res, next) => {
-    try {
-      const { groupId } = req.params;
-      const { groupName, numOfMembers } = req.body;
-      const group = await prisma.groups.findFirst({
-        where: {
-          groupId: +groupId,
-        },
-      });
-
-      if (!group) {
-        return res.status(HTTP_STATUS.NOT_FOUND).json({
-          status: HTTP_STATUS.NOT_FOUND,
-          message: MESSAGES.ADMIN.DELETE_GROUP.IS_NOT_EXIST,
-        });
-      }
-
-      const artist = await prisma.userInfos.findMany({
-        where: {
-          Role: group.groupId,
-        },
-      });
-
-      if (artist) {
-        return res.status(HTTP_STATUS.FORBIDDEN).json({
-          status: HTTP_STATUS.FORBIDDEN,
-          message: MESSAGES.ADMIN.DELETE_GROUP.ARTIST_EXIST,
-        });
-      }
-
-      const deletedGroup = await prisma.groups.delete({
-        where: {
-          groupId: +groupId,
-        },
-      });
-
-      return res.status(HTTP_STATUS.CREATED).json({
-        status: HTTP_STATUS.CREATED,
-        message: MESSAGES.ADMIN.DELETE_GROUP.SUCCEED,
-        data: deletedGroup.groupId,
+        message: MESSAGES.AUTH.SIGN_UP_ARTIST.SUCCEED,
+        data: { userInfo },
       });
     } catch (err) {
       next(err);
