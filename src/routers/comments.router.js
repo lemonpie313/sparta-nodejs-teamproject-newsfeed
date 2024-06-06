@@ -51,68 +51,36 @@ router.delete('/:commentId', authMiddleware, async (req, res, next) => {
 		// 1-1. req.params로부터 commentId 받아온다.
 		const { commentId } = req.params;
 		// 1-2. req.user로부터 UserId 가져온다.
-		const { UserId } = req.user;
+		const { UserId, Role } = req.user;
 
-		// 관리자 유저
-		if (UserId === 1) {
-			// 2. 해당 댓글이 존재하는지 확인
-			const comment = await prisma.comments.findFirst({
-				where: {
-					commentId: +commentId,
-				},
-			});
-			// 3. 만약 댓글이 존재하지 않는다면
-			if (!comment) {
-				return res.status(HTTP_STATUS.NOT_FOUND).json({
-					status: HTTP_STATUS.NOT_FOUND,
-					message: MESSAGES.COMMENTS.DELETE.NO_COMMENTS,
-				});
-			}
-			// 4. 댓글 삭제
-			await prisma.comments.delete({
-				where: {
-					commentId: +commentId,
-				},
-			});
-			// 5. 댓글 작성 결과를 클라이언트에 반환
-			return res.status(HTTP_STATUS.OK).json({
-				status: HTTP_STATUS.OK,
-				message: MESSAGES.COMMENTS.DELETE.SUCCEED,
-				data: {
-					commentId,
-				},
-			});
-		} else {
-			// 일반 유저
-			// 2. 해당 댓글이 존재하는지 확인
-			const comment = await prisma.comments.findFirst({
-				where: {
-					UserId: +UserId,
-					commentId: +commentId,
-				},
-			});
-			// 3. 만약 댓글이 존재하지 않는다면
-			if (!comment) {
-				return res.status(HTTP_STATUS.NOT_FOUND).json({
-					status: HTTP_STATUS.NOT_FOUND,
-					message: MESSAGES.COMMENTS.DELETE.NO_COMMENTS,
-				});
-			}
-			// 4. 댓글 삭제
-			await prisma.comments.delete({
-				where: {
-					commentId: +commentId,
-				},
-			});
-			// 5. 댓글 작성 결과를 클라이언트에 반환
-			return res.status(HTTP_STATUS.OK).json({
-				status: HTTP_STATUS.OK,
-				message: MESSAGES.COMMENTS.DELETE.SUCCEED,
-				data: {
-					commentId,
-				},
+		const comment = await prisma.comments.findFirst({
+			where: {
+				commentId: +commentId,
+			},
+		});
+
+		// 2. 글쓴이도 아니고 관리자도 아닐 경우
+		if (comment.UserId !== UserId && Role !== 1) {
+			return res.status(HTTP_STATUS.NOT_FOUND).json({
+				status: HTTP_STATUS.NOT_FOUND,
+				message: MESSAGES.COMMENTS.DELETE.NOT_AVAILABLE,
 			});
 		}
+		// 3. 댓글 삭제
+		await prisma.comments.delete({
+			where: {
+				commentId: +commentId,
+			},
+		});
+
+		return res.status(HTTP_STATUS.OK).json({
+			status: HTTP_STATUS.OK,
+			message: MESSAGES.COMMENTS.DELETE.SUCCEED,
+			data: {
+				commentId,
+			},
+		});
+
 	} catch (err) {
 		next(err);
 	}

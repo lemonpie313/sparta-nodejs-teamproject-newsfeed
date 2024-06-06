@@ -42,16 +42,6 @@ router.post(
 
 
 			//그룹 이름 검사
-			if (
-				!Object.values(GROUP).includes(group) ||
-				(role != ROLE.FAN && role != group)
-			) {
-				return res.status(HTTP_STATUS.NOT_FOUND).json({
-					status: HTTP_STATUS.NOT_FOUND,
-					message: MESSAGES.POSTS.CREATE.GROUP.INVALID,
-				});
-			}
-			//그룹 이름 검사
 			const group = await prisma.groups.findFirst({
 				where: {
 					groupId: +groupId,
@@ -389,67 +379,33 @@ router.get('/detail/:postId', authMiddleware, async (req, res, next) => {
 router.delete('/:postId', authMiddleware, async (req, res, next) => {
 	try {
 		//유저 아이디를 req.user에서 가져옴
-		const { UserId } = req.user;
+		const { UserId, Role } = req.user;
 
 		//포스트 아이디를 req.params에서 가져옴
 		const { postId } = req.params;
 
-		// 관리자 권한 삭제
-		if (UserId === 1) {
+		const post = await prisma.posts.findFirst({
+			where: {
+				postId: +postId,
+			},
+		});
 
-			const post = await prisma.posts.findFirst({
-				where: {
-					postId: +postId,
-				},
-			});
-
-			if (!post) {
-				return res.status(HTTP_STATUS.NOT_FOUND).json({
-					status: HTTP_STATUS.NOT_FOUND,
-					message: MESSAGES.POSTS.DELETE.NO_POSTID,
-				});
-			}
-
-			// 삭제
-			await prisma.posts.delete({
-				where: { postId: +postId },
-			});
-
-			return res.status(HTTP_STATUS.OK).json({
-				status: HTTP_STATUS.OK,
-				message: MESSAGES.POSTS.DELETE.SUCCEED,
-				data: { postId: postId },
-			});
-		} else {
-			// 관리자가 아닌 일반 유저의 삭제 API
-
-			//해당 게시물이 존재 하는지 검사 params에서 가져온 id = post에서 가져온 id 일치인지 조회
-			const post = await prisma.posts.findFirst({
-				where: {
-					UserId: +UserId,
-					postId: +postId,
-				},
-			});
-
-			// 
-			if (!post) {
-				return res.status(HTTP_STATUS.NOT_FOUND).json({
-					status: HTTP_STATUS.NOT_FOUND,
-					message: MESSAGES.POSTS.DELETE.NO_POSTID,
-				});
-			}
-
-			// 삭제
-			await prisma.posts.delete({
-				where: { postId: +postId },
-			});
-
-			return res.status(HTTP_STATUS.OK).json({
-				status: HTTP_STATUS.OK,
-				message: MESSAGES.POSTS.DELETE.SUCCEED,
-				data: { postId: postId },
+		if (post.UserId !== UserId && Role !== 1) {
+			return res.status(HTTP_STATUS.FORBIDDEN).json({
+				status: HTTP_STATUS.FORBIDDEN,
+				message: MESSAGES.POSTS.DELETE.NOT_AVAILABLE
 			});
 		}
+		// 삭제
+		await prisma.posts.delete({
+			where: { postId: +postId },
+		});
+
+		return res.status(HTTP_STATUS.OK).json({
+			status: HTTP_STATUS.OK,
+			message: MESSAGES.POSTS.DELETE.SUCCEED,
+			data: { postId: postId },
+		});
 
 	} catch (err) {
 		next(err);

@@ -127,7 +127,7 @@ export const MESSAGES = {
 		},
 		DELETE: {
 			NO_POSTID: '해당 게시글이 존재하지 않습니다.',
-			POST_ID_NOT_MATCHED: '작성자가 다른 게시물입니다.',
+			NOT_AVAILABLE: '잘못된 접근입니다.',
 			SUCCEED: '삭제가 완료되었습니다.',
 		},
 		LIKES: {
@@ -152,8 +152,8 @@ export const MESSAGES = {
 		},
 		DELETE: {
 			NO_COMMENTS: '댓글이 존재하지 않습니다.',
-			NO_AUTHORIZATION: '내가 쓴 댓글이 아닙니다.',
 			SUCCEED: '댓글 삭제에 성공하였습니다.',
+			NOT_AVAILABLE: '잘못된 접근입니다.',
 		},
 		LIKE: {
 			LIKE: '좋아요가 반영되었습니다.',
