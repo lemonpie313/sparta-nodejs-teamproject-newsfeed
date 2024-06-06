@@ -9,8 +9,9 @@ import {
 } from '../middlewares/joi/users.joi.middleware.js';
 import bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
-import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
+import { requireRoles } from '../middlewares/role.middleware.js';
 import { ROLE } from '../const/role.const.js';
+import { toS3 } from '../middlewares/multer.middleware.js';
 
 const router = express.Router();
 
@@ -52,13 +53,14 @@ router.get('/', authMiddleware, async (req, res, next) => {
 router.patch(
 	'/',
 	authMiddleware,
+	toS3.single('file'),
 	userInfoUpdateValidator,
 	async (req, res, next) => {
 		try {
 			const { UserId } = req.user;
 			const { name, nickname, selfIntroduction, profilePicture, password } =
 				req.body;
-
+			const file = req.file;
 			const user = await prisma.Users.findFirst({
 				where: {
 					userId: UserId,
@@ -88,7 +90,7 @@ router.patch(
 					name,
 					nickname,
 					selfIntroduction,
-					profilePicture,
+					profilePicture: file.location,
 				},
 				where: {
 					UserId: user.userId,

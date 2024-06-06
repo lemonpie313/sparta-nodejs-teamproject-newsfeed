@@ -8,7 +8,8 @@ import { Prisma } from '@prisma/client';
 import { ROLE } from '../const/role.const.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { requireRoles } from '../middlewares/role.middleware.js';
-import { signUpArtistValidator } from '../middlewares/joi/auth.joi.middleware.js';
+import { signUpArtistValidator } from '../middlewares/joi/admin.joi.middleware.js';
+import { toS3 } from '../middlewares/multer.middleware.js';
 
 const router = express.Router();
 
@@ -61,7 +62,7 @@ router.post('/init', initValidator, async (req, res, next) => {
             nickname,
             Role: admin.groupId,
             selfIntroduction,
-            profilePicture: 'image.jpg',
+            profilePicture: process.env.DEFAULT_PROFILE_PICTURE,
           },
           select: {
             name: true,
@@ -95,6 +96,7 @@ router.post(
   '/sign-up/artists',
   authMiddleware,
   requireRoles([ROLE.ADMIN]),
+  toS3.single('file'),
   signUpArtistValidator,
   async (req, res, next) => {
     try {
@@ -105,8 +107,14 @@ router.post(
         name,
         nickname,
         selfIntroduction,
-        profilePicture,
       } = req.body;
+      const file = req.file;
+      if (!file) {
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({
+          status: HTTP_STATUS.BAD_REQUEST,
+          message: MESSAGES.ADMIN.SIGN_UP_ARTIST.PROFILE_PICTURE.REQUIRED,
+        });
+      }
       const isExistEmail = await prisma.users.findFirst({
         //db의 이메일:body의 이메일
         where: {
@@ -116,7 +124,7 @@ router.post(
       if (isExistEmail) {
         return res.status(HTTP_STATUS.CONFLICT).json({
           status: HTTP_STATUS.CONFLICT,
-          message: MESSAGES.AUTH.SIGN_UP.NOT_AVAILABLE,
+          message: MESSAGES.ADMIN.SIGN_UP_ARTIST.NOT_AVAILABLE,
         });
       }
 
@@ -124,13 +132,13 @@ router.post(
 
       const group = await prisma.groups.findFirst({
         where: {
-          groupId: artistId,
+          groupId: +artistId,
         },
       });
       if (!group) {
         return res.status(HTTP_STATUS.NOT_FOUND).json({
           status: HTTP_STATUS.NOT_FOUND,
-          message: MESSAGES.AUTH.SIGN_UP_ARTIST.ARTIST_ID.IS_NOT_EXIST,
+          message: MESSAGES.ADMIN.SIGN_UP_ARTIST.ARTIST_ID.IS_NOT_EXIST,
         });
       }
 
@@ -153,7 +161,7 @@ router.post(
               nickname,
               Role: group.groupId,
               selfIntroduction,
-              profilePicture: profilePicture ?? 'image.jpg',
+              profilePicture: file.location,
             },
             select: {
               name: true,
@@ -174,7 +182,7 @@ router.post(
 
       return res.status(HTTP_STATUS.CREATED).json({
         status: HTTP_STATUS.CREATED,
-        message: MESSAGES.AUTH.SIGN_UP_ARTIST.SUCCEED,
+        message: MESSAGES.ADMIN.SIGN_UP_ARTIST.SUCCEED,
         data: { userInfo },
       });
     } catch (err) {

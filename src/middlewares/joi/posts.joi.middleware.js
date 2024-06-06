@@ -5,14 +5,10 @@ const postSchema = Joi.object({
   postContent: Joi.string().required().messages({
     'any.required': MESSAGES.POSTS.CREATE.POST_CONTENT.REQUIRED,
   }),
-  postPicture: Joi.array(),
-  keywords: Joi.array(),
 });
 
 const postEditSchema = Joi.object({
   postContent: Joi.string().min(1),
-  postPicture: Joi.array(),
-  keywords: Joi.array(),
 });
 
 const postValidator = async (req, res, next) => {
