@@ -1,0 +1,86 @@
+html {
+  height: 0px;
+}
+
+body {
+  /* 페이지 전체에 공통 적용 */
+  background-color: white;
+  color: black;
+}
+
+/* 탑헤더 설정 */
+.topheader {
+  width: 100%;
+  height: 80px;
+  background-color: white;
+  position: fixed;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0;
+  z-index: 9999;
+
+  border-bottom: 1px solid #d3d3d8;
+}
+
+/* 탑헤더 로고 영역1 : 스타버스 */
+.topheader-logo1 {
+  margin-left: 40px;
+  width: 220px;
+  height: 80px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+}
+/* 탑헤더 로고 영역2 : 스타쉽 엔터테인먼트 */
+.topheader-logo2 {
+  margin-left: 40px;
+  width: 150px;
+  height: 80px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+}
+
+/* 탑헤더 스타버스 로고 이미지 */
+.starverse-logo {
+  width: 220px;
+  height: 65px;
+  object-fit: cover;
+}
+
+.starship-logo {
+  width: 120px;
+  object-fit: cover;
+}
+
+/* 탑헤더 센터 크로스바 */
+.topheader-center {
+  width: 80%;
+}
+
+/* 탑헤더 샵 이미지 */
+.topheader-shop {
+  width: 60px;
+  margin-right: 5px;
+  object-fit: cover;
+}
+
+/* 탑헤더 알람 이미지 */
+.topheader-alarm {
+  width: 60px;
+  object-fit: cover;
+}
+
+/* 탑헤더 로그인 이미지 */
+.topheader-login {
+  width: 100px;
+  object-fit: cover;
+}
