@@ -22,7 +22,7 @@ router.post(
   signUpValidator,
   async (req, res, next) => {
     try {
-      const { email, password, name, nickname, selfIntroduction } = req.body;
+      const { email, password, passwordConfirm, name, nickname, selfIntroduction } = req.body;
       const file = req.file;
 
       const isExistEmail = await prisma.users.findFirst({
@@ -36,6 +36,12 @@ router.post(
           message: MESSAGES.AUTH.SIGN_UP.IS_EXIST,
         });
       }
+	  if (password!=passwordConfirm) {
+		return res.status(HTTP_STATUS.BAD_REQUEST).json({
+			status: HTTP_STATUS.BAD_REQUEST,
+			message: MESSAGES.AUTH.SIGN_UP.IS_EXIST,
+		  });
+	  }
 
       const hashedPassword = await bcrypt.hash(password, 10);
 

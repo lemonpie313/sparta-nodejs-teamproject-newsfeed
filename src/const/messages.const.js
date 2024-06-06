@@ -2,6 +2,7 @@ export const MESSAGES = {
   ADMIN: {
     INIT: {
       NOT_AVAILABLE: '접근 권한이 없습니다.',
+	  PW_NOT_MATCHED: '입력한 두 비밀번호가 일치하지 않습니다.',
       SUCCEED: '셋팅이 완료되었습니다.',
     },
     CREATE_GROUP: {
