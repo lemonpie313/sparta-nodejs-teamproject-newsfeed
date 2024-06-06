@@ -11,11 +11,12 @@ import { Prisma } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { ROLE } from '../const/role.const.js';
 import refreshTokenMiddleware from '../middlewares/refresh-token.middleware.js';
+import { toS3 } from '../middlewares/multer.middleware.js';
 
 const router = express.Router();
 
 //회원가입 - 일반 - 리팩토링중..
-router.post('/sign-up', signUpValidator, async (req, res, next) => {
+router.post('/sign-up', toS3.single('file'), signUpValidator, async (req, res, next) => {
 	try {
 		const {
 			email,
@@ -23,8 +24,9 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 			name,
 			nickname,
 			selfIntroduction,
-			profilePicture,
 		} = req.body;
+		const file = req.file;
+
 		const isExistEmail = await prisma.users.findFirst({
 			where: {
 				email,
@@ -64,8 +66,10 @@ router.post('/sign-up', signUpValidator, async (req, res, next) => {
 						nickname,
 						Role: group.groupId,
 						selfIntroduction,
-						profilePicture: profilePicture ?? 'image.jpg',
+						profilePicture: file ? file.location :  process.env.DEFAULT_PROFILE_PICTURE,
 					},
+					//.env에 아래 줄 추가해주세요
+					// DEFAULT_PROFILE_PICTURE='https://lemonpie313.s3.ap-northeast-2.amazonaws.com/test/1717670788914_03103351.jpg'
 					select: {
 						name: true,
 						Role: true,

@@ -17,6 +17,17 @@ export const MESSAGES = {
 			ARTIST_EXIST:
 				'그룹에 해당하는 아티스트가 존재하여, 그룹을 삭제할 수 없습니다.',
 		},
+		SIGN_UP_ARTIST: {
+			ARTIST_ID: {
+				REQUIRED: '아티스트 아이디 값을 입력해주세요.',
+				IS_NOT_EXIST: '해당 그룹이 존재하지 않습니다.',
+			},
+			PROFILE_PICTURE: {
+				REQUIRED: '아티스트 프로필 사진을 추가해주세요.',
+			},
+			NOT_AVAILABLE: '회원가입을 할 수 없습니다.',
+			SUCCEED: '아티스트 계정 생성에 성공했습니다.',
+		},
 	},
 	AUTH: {
 		COMMON: {
@@ -46,14 +57,6 @@ export const MESSAGES = {
 		SIGN_UP: {
 			IS_EXIST: '이미 가입된 사용자입니다.',
 			SUCCEED: '회원가입에 성공했습니다.',
-		},
-		SIGN_UP_ARTIST: {
-			ARTIST_ID: {
-				REQUIRED: '아티스트 아이디 값을 입력해주세요.',
-				IS_NOT_EXIST: '해당 그룹이 존재하지 않습니다.',
-			},
-			NOT_AVAILABLE: '회원가입을 할 수 없습니다.',
-			SUCCEED: '아티스트 계정 생성에 성공했습니다.',
 		},
 		SIGN_IN: {
 			IS_NOT_EXIST: '회원 정보를 찾을 수 없습니다.',

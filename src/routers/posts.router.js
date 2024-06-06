@@ -11,6 +11,8 @@ import { GROUP } from '../const/group.const.js';
 import { ROLE } from '../const/role.const.js';
 import { Prisma } from '@prisma/client';
 import { requireRoles, exceptRoles } from '../middlewares/role.middleware.js';
+import { toS3 } from '../middlewares/multer.middleware.js';
+
 
 const router = express.Router();
 
@@ -19,26 +21,14 @@ router.post(
   '/:groupId',
   authMiddleware,
   exceptRoles([ROLE.ADMIN]),
+  toS3.array('files', 5),
   postValidator,
   async (req, res, next) => {
     try {
-      const { postContent, postPicture } = req.body;
+      const { postContent } = req.body;
       const { groupId } = req.params;
       const { UserId, Role } = req.user;
-
-      // 이미지가 유효한지 (jpg, png 등...)
-      if (postPicture) {
-        postPicture.forEach((i) => {
-          console.log('검사할것: ' + i);
-          const ext = i.replace(/(\w|-)+./, '');
-          if (!['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov'].includes(ext)) {
-            return res.status(HTTP_STATUS.BAD_REQUEST).json({
-              status: HTTP_STATUS.BAD_REQUEST,
-              message: MESSAGES.POSTS.CREATE.POST_PICTURE.INVALID_FORMAT,
-            });
-          }
-        });
-      }
+      const files = req.files;
 
       //그룹 이름 검사
       const group = await prisma.groups.findFirst({
@@ -98,12 +88,13 @@ router.post(
             },
           });
           let pictures = [];
-          if (postPicture) {
-            for (let i = 0; i < postPicture.length; i++) {
+          if (files) {
+            for (let i = 0; i < files.length; i++) {
+              const location = files[i].location;
               const picture = await tx.postPictures.create({
                 data: {
                   PostId: post.postId,
-                  picture: postPicture[i],
+                  picture: location,
                 },
               });
               pictures.push(picture);
@@ -191,26 +182,14 @@ router.get(
 router.patch(
   '/:postId',
   authMiddleware,
+  toS3.array('files', 5),
   postEditValidator,
   async (req, res, next) => {
     try {
       const { postId } = req.params;
       const { UserId } = req.user;
-      const { postContent, postPicture, keywords } = req.body;
-
-      //이미지가 유효한지 (jpg, png 등...)
-      if (postPicture) {
-        postPicture.forEach((i) => {
-          console.log('검사할것: ' + i);
-          const ext = i.replace(/(\w|-)+./, '');
-          if (!['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov'].includes(ext)) {
-            return res.status(HTTP_STATUS.BAD_REQUEST).json({
-              status: HTTP_STATUS.BAD_REQUEST,
-              message: MESSAGES.POSTS.CREATE.POST_PICTURE.INVALID_FORMAT,
-            });
-          }
-        });
-      }
+      const { postContent } = req.body;
+      const files = req.files;
 
       const findPost = await prisma.posts.findFirst({
         where: {
@@ -263,17 +242,18 @@ router.patch(
           },
         });
         let pictures = [];
-        if (postPicture != undefined) {
+        if (files != undefined) {
           const deletedPicture = await tx.postPictures.deleteMany({
             where: {
               PostId: +postId,
             },
           });
-          for (let i = 0; i < postPicture.length; i++) {
+          for (let i = 0; i < files.length; i++) {
+            const location = files[i].location;
             const picture = await tx.postPictures.create({
               data: {
                 PostId: post.postId,
-                picture: postPicture[i],
+                picture: location,
               },
             });
             pictures.push(picture);

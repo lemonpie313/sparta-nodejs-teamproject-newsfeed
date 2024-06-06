@@ -27,8 +27,10 @@ router.post(
 // S3에 1개 저장
 router.post('/upload/:group', toS3.single('file'), function (req, res, next) {
   const loc = req.file.location;
+  const { a } = req.body;
   res.send({
     fileLocation: loc,
+    a,
   });
 });
 
