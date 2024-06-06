@@ -259,13 +259,20 @@ router.patch(
       // 1-1. 팔로우 할려고 하는 사람(자신)의 ID 가져오기
       const { UserId } = req.user;
 
+      const role = await prisma.groups.findFirst({
+        where: {
+          groupName: ROLE.ADMIN,
+        }
+      }
+      )
+
       if (UserId == +userId) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           status: HTTP_STATUS.BAD_REQUEST,
           message: MESSAGES.USERS.FOLLOW.SELF_IMPOSSIBLE,
         });
       }
-      if (+userId == 1) {
+      if (+userId == role.groupId) {
         return res.status(HTTP_STATUS.BAD_REQUEST).json({
           status: HTTP_STATUS.BAD_REQUEST,
           message: MESSAGES.USERS.FOLLOW.IMPOSSIBLE,

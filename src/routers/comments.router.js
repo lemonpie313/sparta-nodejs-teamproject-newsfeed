@@ -3,6 +3,8 @@ import { prisma } from '../utils/prisma/index.js';
 import authMiddleware from '../middlewares/access-token.middleware.js';
 import { HTTP_STATUS } from '../const/http-status.const.js';
 import { MESSAGES } from '../const/messages.const.js';
+import { exceptRoles } from '../middlewares/role.middleware.js';
+import { ROLE } from '../const/role.const.js';
 
 const router = express.Router();
 
@@ -72,8 +74,14 @@ router.delete('/:commentId', authMiddleware, async (req, res, next) => {
       },
     });
 
+    const role = await prisma.groups.findFirst({
+      where: {
+        groupName: ROLE.ADMIN,
+      }
+    })
+
     // 2. 글쓴이도 아니고 관리자도 아닐 경우
-    if (comment.UserId !== UserId && Role !== 1) {
+    if (comment.UserId !== UserId && Role !== role.groupId) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         status: HTTP_STATUS.NOT_FOUND,
         message: MESSAGES.COMMENTS.DELETE.NOT_AVAILABLE,
@@ -155,7 +163,7 @@ router.patch('/:commentId', authMiddleware, async (req, res, next) => {
 });
 
 /** 내 댓글 목록 조회 API **/
-router.get('/me', authMiddleware, async (req, res, next) => {
+router.get('/me', authMiddleware, exceptRoles([ROLE.ADMIN]), async (req, res, next) => {
   try {
     // 1. req.user로부터 UserId 가져오기
     const { UserId } = req.user;
