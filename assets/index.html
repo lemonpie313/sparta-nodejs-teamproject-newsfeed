@@ -1,115 +1,386 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Starverse</title>
 
-  <title>Starverse</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-  <link rel="stylesheet" type="text/css" href="css/index.css" />
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
-    crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  <script type="module" src="js/index.js"></script>
-</head>
+    <!-- 부트스트랩 삽입 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
 
-<body style="height: 100%; overflow-y: auto">
-  <!-- 탑헤더 -->
-  <header class="topheader">
-    <!-- 탑헤더 로고: 스타버스 -->
-    <div class="topheader-logo1">
-      <a href="index.html"><img class="starverse-logo" src="img/logo.jpg" /></a>
-    </div>
-    <!-- 탑헤더 로고: 스타쉽 엔터테인먼트 -->
-    <div class="topheader-logo2">
-      <a href="http://www.starship-ent.com/" target="_blank"><img class="starship-logo" src="img/starship.png" /></a>
-    </div>
-    <!-- 탑헤더 센터 크로스바 -->
-    <div class="topheader-center"></div>
-    <!-- 탑헤더 샵 버튼 -->
-    <div class="topheader-shop">
-      <a herf="#"><img class="topheader-shop" src="img/shop.jpg" /></a>
-    </div>
-    <!-- 탑헤더 알람 버튼 -->
-    <div class="topheader-alarm">
-      <a herf="#"><img class="topheader-alarm" src="img/alarm.jpg" /></a>
-    </div>
-    <!-- 탑헤더 로그인 버튼 -->
-    <div class="topheader-login">
-      <a herf="#"><img class="topheader-login" src="img/login.jpg" /></a>
-    </div>
-  </header>
-  <!--메인 이미지 슬라이드-->
-  <div id="main" , class="main">
-    <div id="main-center" , class="main-center">
-      <div id="main-news" , class="main-news">
-        <div id="news" , class="news">
-          <div id="carouselExampleIndicators" class="carousel slide">
-            <div class="carousel-indicators">
-              <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
-                aria-current="true" aria-label="Slide 1"></button>
-              <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
-                aria-label="Slide 2"></button>
-              <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
-                aria-label="Slide 3"></button>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script type="module" src="js/index.js"></script>
+
+    <!-- CSS 삽입 -->
+    <link rel="stylesheet" type="text/css" href="css/index.css" />
+  </head>
+
+  <body style="height: 100%; overflow-y: auto">
+    <!-- 탑헤더 -->
+    <header class="topheader">
+      <!-- 탑헤더 로고: 스타버스 -->
+      <div class="topheader-logo1">
+        <a href="index.html"
+          ><img class="starverse-logo" src="img/logo.jpg"
+        /></a>
+      </div>
+      <!-- 탑헤더 로고: 스타쉽 엔터테인먼트 -->
+      <div class="topheader-logo2">
+        <a href="http://www.starship-ent.com/" target="_blank"
+          ><img class="starship-logo" src="img/starship.png"
+        /></a>
+      </div>
+      <!-- 탑헤더 센터 크로스바 -->
+      <div class="topheader-center"></div>
+      <!-- 탑헤더 샵 버튼 -->
+      <div class="topheader-shop">
+        <a herf="#"><img class="topheader-shop" src="img/shop.jpg" /></a>
+      </div>
+      <!-- 탑헤더 알람 버튼 -->
+      <div class="topheader-alarm">
+        <a herf="#"><img class="topheader-alarm" src="img/alarm.jpg" /></a>
+      </div>
+      <!-- 탑헤더 로그인 버튼 -->
+      <div class="topheader-login">
+        <a herf="#"><img class="topheader-login" src="img/login.jpg" /></a>
+      </div>
+    </header>
+
+    <!--메인 슬라이드 사진첩 -->
+    <div id="main" , class="main">
+      <div id="main-center" , class="main-center">
+        <div id="main-news" , class="main-news">
+          <div id="news" , class="news">
+            <div id="carouselExampleIndicators" class="carousel slide">
+              <div class="carousel-indicators">
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="0"
+                  class="active"
+                  aria-current="true"
+                  aria-label="Slide 1"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="1"
+                  aria-label="Slide 2"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="2"
+                  aria-label="Slide 3"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="3"
+                  aria-label="Slide 4"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="4"
+                  aria-label="Slide 5"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="5"
+                  aria-label="Slide 6"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="6"
+                  aria-label="Slide 7"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="7"
+                  aria-label="Slide 8"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="8"
+                  aria-label="Slide 9"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="9"
+                  aria-label="Slide 10"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="10"
+                  aria-label="Slide 11"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="11"
+                  aria-label="Slide 12"
+                ></button>
+                <button
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide-to="12"
+                  aria-label="Slide 13"
+                ></button>
+              </div>
+
+              <!-- 메인 슬라이드 사진첩에 사진 등록 -->
+              <div class="carousel-inner">
+                <div class="carousel-item active">
+                  <img
+                    src="./img/main01_ive_switch.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main02_cravity_evershine.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main03_ive_ivemine.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main04_ive_iveive.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main05_monstax_reason.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main06_ive_afterlike.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main08_ive_lovedive.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main10_ive_eleven.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main11_cravity_theawakening.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main07_wjsn_seouence.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main09_wjsn_superyuppers.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main12_wjsn_theblack.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+                <div class="carousel-item">
+                  <img
+                    src="./img/main13_wjsn_unnatural.jpg"
+                    class="d-block w-100"
+                    alt="..."
+                  />
+                </div>
+              </div>
+              <!-- 메인 슬라이드 사진첩 버튼 -->
+              <button
+                class="carousel-control-prev"
+                type="button"
+                data-bs-target="#carouselExampleIndicators"
+                data-bs-slide="prev"
+              >
+                <span
+                  class="carousel-control-prev-icon"
+                  aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button
+                class="carousel-control-next"
+                type="button"
+                data-bs-target="#carouselExampleIndicators"
+                data-bs-slide="next"
+              >
+                <span
+                  class="carousel-control-next-icon"
+                  aria-hidden="true"
+                ></span>
+                <span class="visually-hidden">Next</span>
+              </button>
             </div>
-            <div class="carousel-inner">
-              <div class="carousel-item active">
-                <img src="./img/main03_ive_ivemine.jpg" class="d-block w-100" alt="...">
+          </div>
+        </div>
+
+        <!--메인 > 아티스트 페이지 바로가기-->
+        <div id="main-artist-cards" class="main-artist-cards">
+          <!-- IVE 아이브 -->
+          <div class="card" id="card-ive">
+            <input
+              type="button"
+              class="card-btn"
+              id="card-btn-ive"
+              style="display: none"
+            />
+            <label for="card-btn-ive">
+              <div class="card-image">
+                <img
+                  src="./img/card01_ive.jpg"
+                  class="card-img-artist"
+                  alt="..."
+                />
               </div>
-              <div class="carousel-item">
-                <img src="./img/main02_cravity_evershine.jpg" class="d-block w-100" alt="...">
+              <div class="card-logo">
+                <img
+                  src="./img/logo01_ive.jpg"
+                  class="card-img-logo"
+                  alt="..."
+                />
+                <h5 class="card-title">IVE</h5>
               </div>
-              <div class="carousel-item">
-                <img src="./img/main01_ive_switch.jpg" class="d-block w-100" alt="...">
+            </label>
+          </div>
+
+          <!-- CRAVITY 크래비티 -->
+          <div class="card" id="card-cravity">
+            <input
+              type="button"
+              class="card-btn"
+              id="card-btn-cravity"
+              style="display: none"
+            />
+            <label for="card-btn-cravity">
+              <div class="card-image">
+                <img
+                  src="./img/card02_cravity.jpg"
+                  class="card-img-artist"
+                  alt="..."
+                />
               </div>
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
-              data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
-              data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Next</span>
-            </button>
+              <div class="card-logo">
+                <img
+                  src="./img/logo02_cravity.png"
+                  class="card-img-logo"
+                  alt="..."
+                />
+                <h5 class="card-title">CRAVITY</h5>
+              </div>
+            </label>
+          </div>
+
+          <!-- WJSN 우주소녀 -->
+          <div class="card" id="card-cravity">
+            <input
+              type="button"
+              class="card-btn"
+              id="card-btn-cravity"
+              style="display: none"
+            />
+            <label for="card-btn-cravity">
+              <div class="card-image">
+                <img
+                  src="./img/card03_wjsn.jpg"
+                  class="card-img-artist"
+                  alt="..."
+                />
+              </div>
+              <div class="card-logo">
+                <img
+                  src="./img/logo03_wjsn.jpg"
+                  class="card-img-logo"
+                  alt="..."
+                />
+                <h5 class="card-title">WJSN</h5>
+              </div>
+            </label>
+          </div>
+
+          <!-- MONSTAX 몬스타엑스 -->
+          <div class="card" id="card-cravity">
+            <input
+              type="button"
+              class="card-btn"
+              id="card-btn-cravity"
+              style="display: none"
+            />
+            <label for="card-btn-cravity">
+              <div class="card-image">
+                <img
+                  src="./img/card04_monstax.jpg"
+                  class="card-img-artist"
+                  alt="..."
+                />
+              </div>
+              <div class="card-logo">
+                <img
+                  src="./img/logo04_monstax.jpg"
+                  class="card-img-logo"
+                  alt="..."
+                />
+                <h5 class="card-title">MONSTAX</h5>
+              </div>
+            </label>
           </div>
         </div>
       </div>
-      <!--메인 > 아티스트 페이지 바로가기-->
-      <div id="main-artist-cards" class="main-artist-cards">
-        <div class="card" id="card-ive">
-          <input type="button" class="card-btn" id="card-btn-ive" style="display:none">
-          <label for="card-btn-ive">
-            <div class="card-image">
-              <img src="./img/card01_ive.jpg" class="card-img-artist" alt="...">
-            </div>
-            <div class="card-logo">
-              <img src="./img/logo01-ive.jpg" class="card-img-logo" alt="...">
-              <h5 class="card-title">IVE</h5>
-            </div>
-        </div>
-        </label>
-        <div class="card" id="card-cravity">
-          <input type="button" class="card-btn" id="card-btn-cravity" style="display:none">
-          <label for="card-btn-cravity">
-            <div class="card-image">
-              <img src="./img/card02_cravity.jpg" class="card-img-artist" alt="...">
-            </div>
-            <div class="card-logo">
-              <img src="./img/logo02_cravity.png" class="card-img-logo" alt="...">
-              <h5 class="card-title">CRAVITY</h5>
-            </div>
-          </label>
-        </div>
-      </div>
     </div>
-  </div>
-</body>
-
+  </body>
 </html>

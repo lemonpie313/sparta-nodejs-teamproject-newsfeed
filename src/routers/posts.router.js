@@ -358,12 +358,12 @@ router.delete('/:postId', authMiddleware, async (req, res, next) => {
     //포스트 아이디를 req.params에서 가져옴
     const { postId } = req.params;
 
-    //해당 게시물이 존재 하는지 검사 params에서 가져온 id = post에서 가져온 id 일치인지
-    const post = await prisma.posts.findFirst({
-      where: {
-        postId: +postId,
-      },
-    });
+		//해당 게시물이 존재 하는지 검사 params에서 가져온 id = post에서 가져온 id 일치인지
+		const post = await prisma.posts.findFirst({
+			where: {
+				postId: +postId,
+			},
+		});
 
     if (!post) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
