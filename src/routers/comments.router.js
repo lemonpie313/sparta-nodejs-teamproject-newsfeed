@@ -26,13 +26,13 @@ router.post('/:postId', authMiddleware, async (req, res, next) => {
         message: MESSAGES.COMMENTS.CREATE.NO_COMMENTS,
       });
     }
-    
+
     const post = await prisma.posts.findFirst({
       where: {
         postId: +postId,
-      }
+      },
     });
-    if(!post) {
+    if (!post) {
       return res.status(HTTP_STATUS.NOT_FOUND).json({
         status: HTTP_STATUS.NOT_FOUND,
         message: MESSAGES.COMMENTS.CREATE.IS_NOT_EXIST,
@@ -77,8 +77,8 @@ router.delete('/:commentId', authMiddleware, async (req, res, next) => {
     const role = await prisma.groups.findFirst({
       where: {
         groupName: ROLE.ADMIN,
-      }
-    })
+      },
+    });
 
     // 2. 글쓴이도 아니고 관리자도 아닐 경우
     if (comment.UserId !== UserId && Role !== role.groupId) {
@@ -163,48 +163,53 @@ router.patch('/:commentId', authMiddleware, async (req, res, next) => {
 });
 
 /** 내 댓글 목록 조회 API **/
-router.get('/me', authMiddleware, exceptRoles([ROLE.ADMIN]), async (req, res, next) => {
-  try {
-    // 1. req.user로부터 UserId 가져오기
-    const { UserId } = req.user;
-    // 2. 현재 로그인 한 사용자의 댓글 목록만 조회하기
-    const comments = await prisma.comments.findMany({
-      select: {
-        PostId: true,
-        User: {
-          select: {
-            UserInfos: {
-              select: {
-                nickname: true,
-              },
-              where: {
-                UserId: +UserId,
+router.get(
+  '/me',
+  authMiddleware,
+  exceptRoles([ROLE.ADMIN]),
+  async (req, res, next) => {
+    try {
+      // 1. req.user로부터 UserId 가져오기
+      const { UserId } = req.user;
+      // 2. 현재 로그인 한 사용자의 댓글 목록만 조회하기
+      const comments = await prisma.comments.findMany({
+        select: {
+          PostId: true,
+          User: {
+            select: {
+              UserInfos: {
+                select: {
+                  nickname: true,
+                },
+                where: {
+                  UserId: +UserId,
+                },
               },
             },
           },
+          commentId: true,
+          comment: true,
+          createdAt: true,
+          updatedAt: true,
         },
-        commentId: true,
-        comment: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-      where: {
-        UserId: +UserId,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-    // 3. 내 댓글 목록 조회 결과를 클라이언트에 반환
-    return res.status(HTTP_STATUS.OK).json({
-      status: HTTP_STATUS.OK,
-      message: MESSAGES.COMMENTS.READ.SUCCEED,
-      data: comments,
-    });
-  } catch (err) {
-    next(err);
+        where: {
+          UserId: +UserId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+      // 3. 내 댓글 목록 조회 결과를 클라이언트에 반환
+      return res.status(HTTP_STATUS.OK).json({
+        status: HTTP_STATUS.OK,
+        message: MESSAGES.COMMENTS.READ.SUCCEED,
+        data: comments,
+      });
+    } catch (err) {
+      next(err);
+    }
   }
-});
+);
 
 /** 댓글 좋아요 API **/
 router.patch('/like/:commentId', authMiddleware, async (req, res, next) => {
