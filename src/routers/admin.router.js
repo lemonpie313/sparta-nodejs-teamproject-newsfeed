@@ -31,12 +31,12 @@ router.post('/init', initValidator, async (req, res, next) => {
         message: MESSAGES.ADMIN.INIT.NOT_AVAILABLE,
       });
     }
-    if (password!=passwordConfirm) {
+    if (password != passwordConfirm) {
       return res.status(HTTP_STATUS.BAD_REQUEST).json({
         status: HTTP_STATUS.BAD_REQUEST,
         message: MESSAGES.ADMIN.INIT.PW_NOT_MATCHED,
-        });
-      }
+      });
+    }
     const userInfo = await prisma.$transaction(
       async (tx) => {
         const admin = await tx.groups.create({

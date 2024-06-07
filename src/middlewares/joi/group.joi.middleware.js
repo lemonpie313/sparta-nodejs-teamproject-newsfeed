@@ -12,12 +12,12 @@ const signUpSchema = Joi.object({
 });
 
 const signUpValidator = async (req, res, next) => {
-    try {
-      await signUpSchema.validateAsync(req.body);
-      next();
-    } catch (error) {
-      next(error);
-    }
-  };
+  try {
+    await signUpSchema.validateAsync(req.body);
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
 
-  export { signUpValidator };
+export { signUpValidator };
