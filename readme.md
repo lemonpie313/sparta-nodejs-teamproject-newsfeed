@@ -1,34 +1,34 @@
 # 아티스트&팬 소통 커뮤니티 Starverse
 
-## 프로젝트 소개
+## 🍉 프로젝트 소개
 ### 프로젝트명
-#### 스타버스(starverse)
+#### ⭐스타버스(starverse)
 연예인기획사 스타쉽 소속 아이돌 팬들이 모여 함께 소통하고 교류하는 우주 같은 커뮤니티
 
 ### 프로젝트 목표
 위버스라는 팬 커뮤니티를 모티브하여 스타쉽 엔터테인먼트 소속 아이돌 그룹의 팬 커뮤니티를 제작하여, 원하는 유형의 게시물을 한 눈에 볼 수 있고, 팬들과 아티스트들 끼리 즐겁게 소통할 수 있도록 하였습니다.
 
-## 팀 소개
+## 🍋 팀 소개
 - 팀장: 진수현
 - 팀원: 나지윤
 - 팀원: 노시헌
 - 팀원: 석한솔
 
-## 개발환경
+## 🍏 개발환경
 - OS: Window / Mac
 - Code editor: Visual Studio Code
 - Client-Tool : Insomnia
 - Database: AWS/RDS (MySQL)
 - Server: AWS/EC2
 
-## 개발언어
+## 🥭 개발언어
 - Front-End : Html, CSS, Javascript
 - Back-End : Javascript
 - Node.js, Express.js
 - Database: MySQL
 - ORM: Prisma
 
-## 실행 방법 (개발용)
+## 🍑 실행 방법 (개발용)
 ### 1. 클론 및 패키지 설치
 ```
 git clone
@@ -55,20 +55,20 @@ DEFAULT_PROFILE_PICTURE=(기본 프로필 사진 url)
 yarn run dev
 ```
 
-## 실행 방법(서버)
+## 🍊 실행 방법(서버)
 3.35.238.172:3000/api 로 접속 후, api 명세서를 참고하여 api 호출
 
-## 와이어프레임
+## 🍍 와이어프레임
 ![ex_screenshot](./wireFrame.png)
 
-## API 명세서
+## 🍎 API 명세서
 ![ex_screenshot](./API.png)
 https://teamsparta.notion.site/STAR-VERSE-caf405f4c13540d6879718f8afe3716a
 
-## ERD
+## 🍌 ERD
 ![ex_screenshot](./ERD.jpg)
 
-## 프로젝트 구조
+## 🍒 프로젝트 구조
 ```
 PP3RESUME-HUB
 ├── assets
