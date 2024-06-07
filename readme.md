@@ -45,18 +45,18 @@ yarn run dev
 - 팀원: 석한솔
 
 ## 개발환경
-OS: Window / Mac
-Code editor: Visual Studio Code
-Client-Tool : Insomnia
-Database: AWS/RDS (MySQL)
-Server: AWS/EC2
+- OS: Window / Mac
+- Code editor: Visual Studio Code
+- Client-Tool : Insomnia
+- Database: AWS/RDS (MySQL)
+- Server: AWS/EC2
 
 ## 개발언어
-Front-End : Html, CSS, Javascript
-Back-End : Javascript
-Node.js, Express.js
-Database: MySQL
-ORM: Prisma
+- Front-End : Html, CSS, Javascript
+- Back-End : Javascript
+- Node.js, Express.js
+- Database: MySQL
+- ORM: Prisma
 
 ## API 명세서
 ![ex_screenshot](./API.png)
