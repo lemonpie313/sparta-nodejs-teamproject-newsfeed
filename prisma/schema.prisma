@@ -1,0 +1,179 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+model Groups {
+    groupId      Int      @id @default(autoincrement()) @map("group_id")
+    groupName    String   @unique @map("group_name")
+    numOfMembers Int      @map("num_of_members")
+    groupLogo    String   @map("group_logo")
+    groupPicture String   @map("group_picture")
+    createdAt    DateTime @default(now()) @map("created_at")
+    updatedAt    DateTime @updatedAt @map("updated_at")
+
+    UserInfos UserInfos[]
+    Posts     Posts[]
+
+    @@map("groups")
+}
+
+model Users {
+    userId   Int    @id @default(autoincrement()) @map("user_id")
+    email    String @unique @map("email")
+    password String @map("password")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    UserInfos    UserInfos?
+    RefreshToken RefreshToken?
+    Posts        Posts[]
+    Comments     Comments[]
+    Followings   Followings[]
+    Followers    Followers[]
+
+    @@map("users")
+}
+
+model UserInfos {
+    userInfoId Int @id @default(autoincrement()) @map("user_info_id")
+    UserId     Int @unique @map("user_id")
+
+    Role             Int     @map("role")
+    name             String  @map("name")
+    nickname         String  @map("nickname")
+    selfIntroduction String  @map("self_introduction") @db.Text
+    profilePicture   String? @default("picture.jpg") @map("profile_picture")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    User         Users          @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+    Groups       Groups         @relation(fields: [Role], references: [groupId], onDelete: Cascade)
+    LikePosts    LikePosts[]
+    LikeComments LikeComments[]
+
+    @@map("user_infos")
+}
+
+model RefreshToken {
+    tokenId Int @id @default(autoincrement()) @map("token_id")
+    userId  Int @unique @map("user_id")
+
+    token String? @map("token") @db.Text
+
+    createdAt DateTime @default(now()) @map("created_at")
+
+    User Users @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+    @@map("refresh_token")
+}
+
+model Posts {
+    postId Int @id @default(autoincrement()) @map("post_id")
+    UserId Int @map("user_id")
+    Group  Int @map("group")
+
+    postContent String @map("self_introduction") @db.Text
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    User         Users          @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+    Groups       Groups         @relation(fields: [Group], references: [groupId], onDelete: Cascade)
+    LikePosts    LikePosts[]
+    Comments     Comments[]
+    PostPictures PostPictures[]
+
+    @@map("posts")
+}
+
+model LikePosts {
+    likePostId Int @id @default(autoincrement()) @map("like_post_id")
+    UserInfoId Int @map("user_info_id")
+    PostId     Int @map("post_id")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    Post     Posts     @relation(fields: [PostId], references: [postId], onDelete: Cascade)
+    UserInfo UserInfos @relation(fields: [UserInfoId], references: [userInfoId], onDelete: Cascade)
+}
+
+model PostPictures {
+    postPictureId Int    @id @default(autoincrement()) @map("post_picture_id")
+    PostId        Int    @map("post_id")
+    picture       String @map("picture")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    Post Posts @relation(fields: [PostId], references: [postId], onDelete: Cascade)
+}
+
+model Comments {
+    commentId Int @id @default(autoincrement()) @map("comment_id")
+    PostId    Int @map("post_id")
+    UserId    Int @map("user_id")
+
+    comment String @map("comment") @db.Text
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    User         Users          @relation(fields: [UserId], references: [userId], onDelete: Cascade)
+    Post         Posts          @relation(fields: [PostId], references: [postId], onDelete: Cascade)
+    LikeComments LikeComments[]
+
+    @@map("comments")
+}
+
+model LikeComments {
+    likeCommentId Int @id @default(autoincrement()) @map("like_comment_id")
+    UserInfoId    Int @map("user_info_id")
+    CommentId     Int @map("comment_id")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    Comment  Comments  @relation(fields: [CommentId], references: [commentId], onDelete: Cascade)
+    UserInfo UserInfos @relation(fields: [UserInfoId], references: [userInfoId], onDelete: Cascade)
+}
+
+// model Follows {
+//     followsId   Int @id @default(autoincrement()) @map("followers_id")
+//     followerId  Int @map("follower_id")
+//     followingId Int @map("following_id")
+
+//     User Users @relation(fields: [followerId], references: [userId], onDelete: Cascade)
+
+//     @@map("follows")
+// }
+
+model Followings {
+    followingId     Int      @id @default(autoincrement()) @map("following_id")
+    FollowerId      Int      @unique @map("follower_id")
+    FollowingUserId Int      @map("following_user_id")
+    createdAt       DateTime @default(now()) @map("created_at")
+
+    User      Users     @relation(fields: [FollowingUserId], references: [userId], onDelete: Cascade)
+    Followers Followers @relation(fields: [FollowerId], references: [followerId], onDelete: Cascade)
+
+    @@map("followings")
+}
+
+model Followers {
+    followerId     Int      @id @default(autoincrement()) @map("follower_id")
+    FollowerUserId Int      @map("follower_user_id")
+    createdAt      DateTime @default(now()) @map("created_at")
+
+    User       Users       @relation(fields: [FollowerUserId], references: [userId], onDelete: Cascade)
+    Followings Followings?
+
+    @@map("followers")
+}

@@ -1,0 +1,170 @@
+html {
+  height: 0px;
+}
+
+body {
+  /* 페이지 전체에 공통 적용 */
+  background-color: white;
+  color: black;
+}
+
+/* 탑헤더 설정 */
+.topheader {
+  width: 100%;
+  height: 80px;
+  position: fixed;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0;
+  z-index: 90;
+
+  border-bottom: 1px solid #d3d3d8;
+}
+
+/* 탑헤더 로고 영역1 : 스타버스 */
+.topheader-logo1 {
+  margin-left: 40px;
+  width: 220px;
+  height: 80px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+}
+/* 탑헤더 로고 영역2 : 스타쉽 엔터테인먼트 */
+.topheader-logo2 {
+  margin-left: 40px;
+  width: 150px;
+  height: 80px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+}
+
+/* 탑헤더 스타버스 로고 이미지 */
+.starverse-logo {
+  width: 220px;
+  height: 65px;
+  object-fit: cover;
+}
+
+.starship-logo {
+  width: 120px;
+  object-fit: cover;
+}
+
+/* 탑헤더 센터 크로스바 */
+.topheader-center {
+  width: 80%;
+}
+
+/* 탑헤더 샵 이미지 */
+.topheader-shop {
+  width: 60px;
+  margin-right: 5px;
+  object-fit: cover;
+}
+
+/* 탑헤더 알람 이미지 */
+.topheader-alarm {
+  width: 60px;
+  object-fit: cover;
+}
+
+/* 탑헤더 로그인 이미지 */
+.topheader-login {
+  width: 100px;
+  object-fit: cover;
+}
+
+/* 메인 */
+.main {
+  margin-top: 80px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr;
+  align-items: stretch;
+  left: 0;
+  right: 0;
+  padding: 0;
+}
+
+/* 메인 가운데 정렬 */
+.main-center {
+  margin-top: 10px;
+  background-color: rgba(221, 221, 221, 0.226);
+  grid-column: 2/3;
+}
+
+/* 메인 이미지 슬라이드 영역: 부트스트랩에서 알아서 해줌.. */
+
+/* 메인 아티스트 페이지 링크 */
+.main-artist-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+}
+
+/* 메인 이미지 슬라이드 */
+.news {
+  width: 100%;
+  height: 100%;
+}
+
+/* 아티스트 카드 */
+.card {
+  width: 300px;
+  height: 300px;
+  border-radius: 5%;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px;
+  margin-bottom: 25px;
+}
+
+.card-image {
+  width: 300px;
+  height: 200px;
+  overflow: hidden;
+}
+
+.card-img-artist {
+  width: 300px;
+  border-top-left-radius: 5%;
+  border-top-right-radius: 5%;
+}
+
+.card-logo {
+  width: 300px;
+  height: 100px;
+  background-color: transparent;
+  position: relative;
+  top: -52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.card-img-logo {
+  width: 100px;
+  height: 100px;
+  border-radius: 100%;
+  border: 4px solid white;
+  z-index: 1;
+}
+.card-title {
+  background-color: transparent;
+  font-size: 18pt;
+  position: relative;
+}
